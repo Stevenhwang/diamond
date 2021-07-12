@@ -15,7 +15,7 @@ import (
 
 var (
 	DeadlineTimeout = 6 * time.Hour
-	IdleTimeout     = 30 * time.Minute
+	IdleTimeout     = 10 * time.Second
 )
 
 func passwordHandler(ctx ssh.Context, password string) bool {
@@ -24,7 +24,9 @@ func passwordHandler(ctx ssh.Context, password string) bool {
 }
 
 func sshHandler(s ssh.Session) {
-	// io.WriteString(s, fmt.Sprintf("Hello %s\n", s.User()))
+	io.WriteString(s, fmt.Sprintf("connections will only last %s\n", DeadlineTimeout))
+	io.WriteString(s, fmt.Sprintf("and timeout after %s of no activity\n", IdleTimeout))
+
 	_, winCh, isPty := s.Pty()
 	if isPty {
 		client, err := utils.GetSSHClient("192.168.241.130", 22, "root", "12345678")
@@ -50,23 +52,9 @@ func sshHandler(s ssh.Session) {
 		if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
 			log.Fatal("request for pseudo terminal failed: ", err)
 		}
-		// session.Stdin = s
+		session.Stdin = s
 		// session.Stdout = s
 		session.Stderr = s
-		// 捕捉输入，可用来过滤用户输入
-		in, _ := session.StdinPipe()
-		go func() {
-			for {
-				var buffer [1024]byte
-				n, err := s.Read(buffer[:])
-				if err != nil {
-					fmt.Println("in error:", err)
-					break
-				}
-				fmt.Println(string(buffer[:n]))
-				in.Write(buffer[:n])
-			}
-		}()
 		// 捕捉输出，输出有回显，可用来记录终端输入输出
 		out, _ := session.StdoutPipe()
 		go func() {
@@ -101,8 +89,6 @@ func sshHandler(s ssh.Session) {
 
 func main() {
 	log.Println("starting ssh server on port 2222...")
-	log.Printf("connections will only last %s\n", DeadlineTimeout)
-	log.Printf("and timeout after %s of no activity\n", IdleTimeout)
 
 	server := &ssh.Server{
 		Addr:            ":2222",
