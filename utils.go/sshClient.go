@@ -11,7 +11,7 @@ import (
 func GetSSHClient(host string, port int, user string, password string) (*gossh.Client, error) {
 	// 先尝试用password验证
 	config := &gossh.ClientConfig{
-		Timeout:         5 * time.Second,
+		Timeout:         3 * time.Second,
 		User:            user,
 		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
 		Auth:            []gossh.AuthMethod{gossh.Password(password)},

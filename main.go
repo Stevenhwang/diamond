@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	DeadlineTimeout = 6 * time.Hour
-	IdleTimeout     = 10 * time.Second
+	DeadlineTimeout = 3 * time.Hour
+	IdleTimeout     = 30 * time.Minute
 )
 
 func passwordHandler(ctx ssh.Context, password string) bool {
@@ -24,8 +24,8 @@ func passwordHandler(ctx ssh.Context, password string) bool {
 }
 
 func sshHandler(s ssh.Session) {
-	io.WriteString(s, fmt.Sprintf("connections will only last %s\n", DeadlineTimeout))
-	io.WriteString(s, fmt.Sprintf("and timeout after %s of no activity\n", IdleTimeout))
+	io.WriteString(s, fmt.Sprintf("\n*****Connections will only last %s*****\n", DeadlineTimeout))
+	io.WriteString(s, fmt.Sprintf("*****Timeout after %s of no activity*****\n\n", IdleTimeout))
 
 	_, winCh, isPty := s.Pty()
 	if isPty {
@@ -80,6 +80,20 @@ func sshHandler(s ssh.Session) {
 			for win := range winCh {
 				log.Printf("change window: %d %d", win.Height, win.Width)
 				session.WindowChange(win.Height, win.Width)
+			}
+		}()
+		// 监听超时, 关闭session
+		go func() {
+			for {
+				select {
+				case <-time.After(time.Second):
+					continue
+				case <-s.Context().Done():
+					log.Println("connection closed")
+					session.Close()
+					s.Exit(1)
+					return
+				}
 			}
 		}()
 		session.Wait()
