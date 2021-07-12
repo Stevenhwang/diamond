@@ -38,7 +38,7 @@ func sshHandler(s ssh.Session) {
 		//创建ssh session
 		session, err := client.NewSession()
 		if err != nil {
-			log.Println(err)
+			log.Printf("create session failed: %v", err)
 			s.Exit(1)
 		}
 		defer session.Close()
@@ -50,7 +50,8 @@ func sshHandler(s ssh.Session) {
 		}
 		// Request pseudo terminal
 		if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
-			log.Fatal("request for pseudo terminal failed: ", err)
+			log.Printf("request for pseudo terminal failed: %v", err)
+			s.Exit(1)
 		}
 		session.Stdin = s
 		// session.Stdout = s
@@ -71,7 +72,8 @@ func sshHandler(s ssh.Session) {
 		}()
 		// Start remote shell
 		if err := session.Shell(); err != nil {
-			log.Fatal("failed to start shell: ", err)
+			log.Printf("failed to start shell: %v", err)
+			s.Exit(1)
 		}
 		// window change
 		go func() {
