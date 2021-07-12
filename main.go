@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"diamond/utils.go"
+
 	"github.com/gliderlabs/ssh"
 	gossh "golang.org/x/crypto/ssh"
 )
@@ -25,27 +27,17 @@ func sshHandler(s ssh.Session) {
 	// io.WriteString(s, fmt.Sprintf("Hello %s\n", s.User()))
 	_, winCh, isPty := s.Pty()
 	if isPty {
-		sshPort := 22
-		sshHost := "13.212.227.122"
-		sshUser := "root"
-		sshPassword := "LpNkH&#Y33sbKfDlMCFR"
-
-		config := &gossh.ClientConfig{
-			Timeout:         time.Second,
-			User:            sshUser,
-			HostKeyCallback: gossh.InsecureIgnoreHostKey(),
-			Auth:            []gossh.AuthMethod{gossh.Password(sshPassword)},
-		}
-		addr := fmt.Sprintf("%s:%d", sshHost, sshPort)
-		sshClient, err := gossh.Dial("tcp", addr, config)
+		client, err := utils.GetSSHClient("192.168.241.130", 22, "root", "12345678")
 		if err != nil {
-			log.Fatalf("创建ssh client 失败: %v", err.Error())
+			log.Println(err)
+			s.Exit(1)
 		}
-		defer sshClient.Close()
-		//创建ssh-session
-		session, err := sshClient.NewSession()
+		defer client.Close()
+		//创建ssh session
+		session, err := client.NewSession()
 		if err != nil {
-			log.Fatalf("创建ssh session 失败: %v", err.Error())
+			log.Println(err)
+			s.Exit(1)
 		}
 		defer session.Close()
 		// Set up terminal modes
