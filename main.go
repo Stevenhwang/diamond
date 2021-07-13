@@ -164,8 +164,6 @@ func sshHandler(s ssh.Session) {
 }
 
 func main() {
-	log.Println("starting ssh server on port 2222...")
-
 	server := &ssh.Server{
 		Addr:            ":2222",
 		MaxTimeout:      DeadlineTimeout,
