@@ -32,7 +32,6 @@ type Server struct {
 }
 
 func passwordHandler(ctx ssh.Context, password string) bool {
-	log.Println(ctx.SessionID())
 	return password == "secret"
 }
 
