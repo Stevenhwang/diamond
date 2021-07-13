@@ -5,12 +5,17 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"time"
 
 	"diamond/utils.go"
 
 	"github.com/gliderlabs/ssh"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	"github.com/olekukonko/tablewriter"
 	gossh "golang.org/x/crypto/ssh"
+	"golang.org/x/term"
 )
 
 var (
@@ -18,15 +23,54 @@ var (
 	IdleTimeout     = 30 * time.Minute
 )
 
+type Server struct {
+	ID       int    `db:"id"`
+	IP       string `db:"ip"`
+	USER     string `db:"user"`
+	PORT     int    `db:"port"`
+	PASSWORD string `db:"password"`
+}
+
 func passwordHandler(ctx ssh.Context, password string) bool {
 	log.Println(ctx.SessionID())
 	return password == "secret"
 }
 
 func sshHandler(s ssh.Session) {
+	// 登录成功后提示信息
 	io.WriteString(s, fmt.Sprintf("\n*****Connections will only last %s*****\n", DeadlineTimeout))
 	io.WriteString(s, fmt.Sprintf("*****Timeout after %s of no activity*****\n\n", IdleTimeout))
-
+	// 连接数据库获取信息
+	dsn := "root:#yz2NRz30d_>m^:n90^V@tcp(192.168.241.130:3306)/Bumblebee-new"
+	db, err := sqlx.Open("mysql", dsn)
+	if err != nil {
+		log.Printf("connect server failed, err:%v\n", err)
+		s.Exit(1)
+	}
+	servers := []Server{}
+	db.Select(&servers, "SELECT id, ip, user, port, password FROM cmdb_server")
+	data := [][]string{}
+	for _, server := range servers {
+		data = append(data, []string{strconv.Itoa(server.ID), server.IP, server.USER, strconv.Itoa(server.PORT), server.PASSWORD})
+	}
+	// 展示table信息
+	table := tablewriter.NewWriter(s)
+	table.SetHeader([]string{"id", "ip", "user", "port", "password"})
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render()
+	// 开启ternimal跟用户交互
+	terminal := term.NewTerminal(s, "")
+	terminal.SetPrompt(string(terminal.Escape.Red) + "> " + string(terminal.Escape.Reset))
+	io.WriteString(s, "please choose a server: ")
+	line, err := terminal.ReadLine()
+	if err != nil {
+		log.Println(err)
+		s.Exit(1)
+	}
+	io.WriteString(s, fmt.Sprintf("\nyou choose: %s \n", line))
+	// 连接远程服务器
 	_, winCh, isPty := s.Pty()
 	if isPty {
 		client, err := utils.GetSSHClient("192.168.241.130", 22, "root", "12345678")
