@@ -61,15 +61,32 @@ func sshHandler(s ssh.Session) {
 	}
 	table.Render()
 	// 开启ternimal跟用户交互
-	terminal := term.NewTerminal(s, "")
-	terminal.SetPrompt(string(terminal.Escape.Red) + "> " + string(terminal.Escape.Reset))
-	io.WriteString(s, "please choose a server: ")
-	line, err := terminal.ReadLine()
-	if err != nil {
-		log.Println(err)
-		s.Exit(1)
+	promt := fmt.Sprintf("[%s]=> ", s.User())
+	for {
+		terminal := term.NewTerminal(s, "")
+		terminal.SetPrompt(string(terminal.Escape.Red) + promt + string(terminal.Escape.Reset))
+		io.WriteString(s, "please choose a server: ")
+		line, err := terminal.ReadLine()
+		if err == io.EOF {
+			log.Println(err)
+			io.WriteString(s, "\n")
+			continue
+		}
+		if err != nil {
+			log.Println(err)
+			s.Exit(1)
+			return
+		}
+		if line == "" {
+			log.Println("empty")
+			continue
+		}
+		if len(line) > 0 {
+			io.WriteString(s, fmt.Sprintf("\nyou choose: %s \n", line))
+			break
+		}
 	}
-	io.WriteString(s, fmt.Sprintf("\nyou choose: %s \n", line))
+
 	// 连接远程服务器
 	_, winCh, isPty := s.Pty()
 	if isPty {
