@@ -10,4 +10,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+	gorm.io/driver/mysql v1.1.1
+	gorm.io/gorm v1.21.12
 )
