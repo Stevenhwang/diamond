@@ -8,6 +8,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.14.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/spf13/viper v1.8.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	gorm.io/driver/mysql v1.1.1
