@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -13,6 +14,7 @@ func init() {
 	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
+		log.Printf("connect mysql error: %v", err)
 		panic(err)
 	}
 	sqlDB, err := db.DB()
