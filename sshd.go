@@ -1,4 +1,4 @@
-package main
+package sshd
 
 import (
 	"fmt"
@@ -163,7 +163,7 @@ func sshHandler(s ssh.Session) {
 	}
 }
 
-func main() {
+func Start() {
 	server := &ssh.Server{
 		Addr:            ":2222",
 		MaxTimeout:      DeadlineTimeout,
