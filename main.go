@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	_ "diamond/config"
+	"diamond/config"
 	"diamond/handlers"
 	"diamond/sshd"
 )
@@ -13,5 +13,6 @@ func main() {
 	go sshd.Start()
 	// 启动web服务器
 	app := handlers.App()
-	log.Fatal(app.Listen(":3000"))
+	addr := config.Config.Get("web.addr").(string)
+	log.Fatal(app.Listen(addr))
 }
