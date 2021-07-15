@@ -10,7 +10,8 @@
         "host": "192.168.241.130",
         "port": 6379,
         "password": "123456",
-        "dbName": 6
+        "dbName": 6,
+        "poolSize": 25
     },
     "web": {
         "addr": ":3000"
