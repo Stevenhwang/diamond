@@ -1,6 +1,8 @@
 package models
 
 import (
+	"diamond/config"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +13,13 @@ import (
 var DB *gorm.DB
 
 func init() {
-	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True"
+	host := config.Config.Get("mysql.gost")
+	port := config.Config.Get("mysql.port")
+	user := config.Config.Get("mysql.user")
+	password := config.Config.Get("mysql.password")
+	dbName := config.Config.Get("mysql.dbName")
+
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True", user, password, host, port, dbName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("connect mysql error: %v", err)

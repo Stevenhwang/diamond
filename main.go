@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	_ "diamond/config"
 	"diamond/handlers"
 	"diamond/sshd"
 )
