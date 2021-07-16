@@ -36,5 +36,5 @@ func init() {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	DB = db
 	// 迁移 schema
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Server{}, &Role{}, &Permission{}, &Menu{}, &Log{}, &Group{})
 }
