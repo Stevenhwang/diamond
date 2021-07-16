@@ -9,6 +9,7 @@ type Role struct {
 	Users       []*User       `gorm:"many2many:user_roles"`
 	Permissions []*Permission `gorm:"many2many:role_permissions"`
 	Menus       []*Menu       `gorm:"many2many:role_menus"`
+	Groups      []*Group      `gorm:"many2many:role_groups"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
