@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Role struct {
-	ID          int
+	ID          uint
 	Name        string        `gorm:"size:128"`
 	IsActive    bool          `gorm:"default:true"`
 	Users       []*User       `gorm:"many2many:user_roles"`

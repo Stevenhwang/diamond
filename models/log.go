@@ -6,7 +6,7 @@ import (
 )
 
 type Log struct {
-	ID        int
+	ID        uint
 	Username  string         `gorm:"size:128"`
 	IP        string         `gorm:"size:128"`
 	Method    string         `gorm:"size:16"`

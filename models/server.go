@@ -6,7 +6,7 @@ import (
 )
 
 type Server struct {
-	ID        int
+	ID        uint
 	IP        string         `gorm:"size:128"`
 	Remark    sql.NullString `gorm:"size:128"`
 	Port      int
