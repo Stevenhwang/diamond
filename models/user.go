@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -8,16 +9,16 @@ import (
 
 type User struct {
 	ID            uint
-	UserName      string `gorm:"size:128"`
-	PassWord      string `gorm:"size:128"`
-	Email         string `gorm:"size:128"`
-	Telephone     string `gorm:"size:20"`
-	Department    string `gorm:"size:128"`
-	GoogleKey     string `gorm:"size:256"`
-	IsActive      bool   `gorm:"default:true"`
-	IsSuperuser   bool   `gorm:"default:false"`
-	LastLoginIP   string `gorm:"size:128"`
-	LastLoginTime time.Time
+	UserName      string         `gorm:"size:128"`
+	PassWord      string         `gorm:"size:128"`
+	Email         sql.NullString `gorm:"size:128"`
+	Telephone     sql.NullString `gorm:"size:20"`
+	Department    sql.NullString `gorm:"size:128"`
+	GoogleKey     sql.NullString `gorm:"size:256"`
+	IsActive      bool           `gorm:"default:true"`
+	IsSuperuser   bool           `gorm:"default:false"`
+	LastLoginIP   sql.NullString `gorm:"size:128"`
+	LastLoginTime sql.NullTime
 	Roles         []*Role `gorm:"many2many:user_roles"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
