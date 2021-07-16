@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"diamond/config"
 	"diamond/utils.go"
 
 	"github.com/gliderlabs/ssh"
@@ -164,15 +165,18 @@ func sshHandler(s ssh.Session) {
 }
 
 func Start() {
+	addr := config.Config.Get("sshd.addr").(string)
+	keyPath := config.Config.Get("sshd.keyPath").(string)
 	server := &ssh.Server{
-		Addr:            ":2222",
+		Addr:            addr,
 		MaxTimeout:      DeadlineTimeout,
 		IdleTimeout:     IdleTimeout,
 		PasswordHandler: passwordHandler,
 		Handler:         sshHandler,
 	}
-	dat, _ := ioutil.ReadFile("C:/Users/90hua/.ssh/id_rsa")
+	dat, _ := ioutil.ReadFile(keyPath)
 	key, _ := gossh.ParsePrivateKey(dat)
 	server.AddHostKey(key)
+	log.Println("starting ssh server ...")
 	log.Fatal(server.ListenAndServe())
 }
