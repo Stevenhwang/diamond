@@ -14,6 +14,7 @@ type Server struct {
 	AuthType  int            // 1密码验证 2密钥验证
 	Password  sql.NullString `gorm:"size:128"`
 	Key       sql.NullString `gorm:"type:text"`
+	GroupID   uint
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
