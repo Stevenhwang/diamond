@@ -13,7 +13,7 @@ type User struct {
 	Email         string `gorm:"size:128"`
 	Telephone     string `gorm:"size:20"`
 	Department    string `gorm:"size:128"`
-	GoogleKey     string `gorm:"size:128"`
+	GoogleKey     string `gorm:"size:256"`
 	IsActive      bool   `gorm:"default:true"`
 	IsSuperuser   bool   `gorm:"default:false"`
 	LastLoginIP   string `gorm:"size:128"`
