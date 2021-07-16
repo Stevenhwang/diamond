@@ -8,6 +8,9 @@ func Login(c *fiber.Ctx) error { return nil }
 // 用户登出
 func Logout(c *fiber.Ctx) error { return nil }
 
+// 用户获取个人信息
+func UserInfo(c *fiber.Ctx) error { return nil }
+
 // 用户重置密码
 func ResetPasswd(c *fiber.Ctx) error { return nil }
 
