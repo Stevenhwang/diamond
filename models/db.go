@@ -34,7 +34,7 @@ func init() {
 	sqlDB.SetMaxOpenConns(1000)
 	// SetConnMaxLifetime 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	DB = db
 	// 迁移 schema
 	db.AutoMigrate(&User{}, &Server{}, &Role{}, &Permission{}, &Menu{}, &Log{}, &Group{})
+	DB = db
 }
