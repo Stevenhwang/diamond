@@ -8,7 +8,7 @@ import (
 
 var sshdCmd = &cobra.Command{
 	Use:   "sshd",
-	Short: "start sshd server",
+	Short: "start sshd server[开启 sshd 服务器]",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		sshd.Start()
