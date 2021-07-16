@@ -16,8 +16,8 @@ func init() {
 	host := config.Config.Get("redis.host")
 	port := config.Config.Get("redis.port")
 	password := config.Config.Get("redis.password").(string)
-	dbName := config.Config.Get("redis.dbName").(int)
-	poolSize := config.Config.Get("redis.poolSize").(int)
+	dbName := int(config.Config.Get("redis.dbName").(float64))
+	poolSize := int(config.Config.Get("redis.poolSize").(float64))
 
 	addr := fmt.Sprintf("%v:%v", host, port)
 	RDClient = redis.NewClient(&redis.Options{
