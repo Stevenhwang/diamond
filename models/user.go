@@ -18,6 +18,7 @@ type User struct {
 	IsSuperuser   bool   `gorm:"default:false"`
 	LastLoginIP   string `gorm:"size:128"`
 	LastLoginTime time.Time
+	Roles         []*Role `gorm:"many2many:user_roles"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
