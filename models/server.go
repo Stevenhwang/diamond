@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type Server struct {
@@ -20,3 +22,10 @@ type Server struct {
 }
 
 type Servers []Server
+
+func GetServerList(c *fiber.Ctx) (servers Servers, total int64, err error) {
+	servers = Servers{}
+	DB.Scopes(Filter(Server{}, c)).Count(&total)
+	result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Find(&servers)
+	return servers, total, result.Error
+}

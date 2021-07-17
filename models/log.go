@@ -9,7 +9,7 @@ import (
 )
 
 type Log struct {
-	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4()"`
+	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4()" json:"id"`
 	Username  string         `gorm:"size:128" json:"username"`
 	IP        string         `gorm:"size:128" json:"ip"`
 	Method    string         `gorm:"size:16" json:"method"`
