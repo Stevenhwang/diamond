@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type Log struct {
-	ID        uint
+	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Username  string         `gorm:"size:128" json:"username"`
 	IP        string         `gorm:"size:128" json:"ip"`
 	Method    string         `gorm:"size:16" json:"method"`
