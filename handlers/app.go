@@ -18,6 +18,7 @@ func App() *fiber.App {
 		})
 	})
 
+	app.Use(authTokenMW)
 	app.Get("/users", UserListPerm)
 
 	// rl := app.Stack()
