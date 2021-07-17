@@ -42,20 +42,24 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 	u.Password = pass
 	// generate otp key
-	var accountName string
-	if len(u.Email.String) > 0 {
-		accountName = u.Email.String
+	if u.GoogleKey.String == "seed" {
+		u.GoogleKey = sql.NullString{String: "", Valid: true}
 	} else {
-		accountName = u.Username + "@example.com"
+		var accountName string
+		if len(u.Email.String) > 0 {
+			accountName = u.Email.String
+		} else {
+			accountName = u.Username + "@example.com"
+		}
+		key, err := totp.Generate(totp.GenerateOpts{
+			Issuer:      u.Username,
+			AccountName: accountName,
+		})
+		if err != nil {
+			return err
+		}
+		u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
 	}
-	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      u.Username,
-		AccountName: accountName,
-	})
-	if err != nil {
-		return err
-	}
-	u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
 	return nil
 }
 
