@@ -1,15 +1,68 @@
 package handlers
 
 import (
+	"database/sql"
 	"log"
+	"time"
 
+	"diamond/models"
 	"diamond/utils.go"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/pquerna/otp/totp"
 )
 
 // 用户登录
-func Login(c *fiber.Ctx) error { return nil }
+func Login(c *fiber.Ctx) error {
+	type login struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Otp      string `json:"otp"`
+	}
+	lg := &login{}
+	if err := c.BodyParser(lg); err != nil {
+		RespMsgSuccess(c, 1, err.Error())
+	}
+	if len(lg.Username) == 0 || len(lg.Password) == 0 {
+		RespMsgSuccess(c, 2, "用户名或密码不能为空！")
+	}
+	user := &models.User{}
+	if err := models.DB.Where("username = ?", lg.Username).First(user); err != nil {
+		RespMsgSuccess(c, 3, "用户不存在！")
+	}
+	// 验证密码
+	if !utils.CheckPassword(user.Password, lg.Password) {
+		RespMsgSuccess(c, 4, "密码错误！")
+	}
+	if !user.IsActive {
+		RespMsgSuccess(c, 5, "账号被禁用！")
+	}
+	if len(user.GoogleKey.String) > 0 {
+		if len(lg.Otp) == 0 {
+			RespMsgSuccess(c, 6, "需要二次认证验证码！")
+		}
+		valid := totp.Validate(lg.Otp, user.GoogleKey.String)
+		if !valid {
+			RespMsgSuccess(c, 7, "验证码错误！")
+		}
+	}
+	// 生成token
+	token := utils.J.EncodeToken(user.ID, user.Username, user.IsSuperuser)
+	// 将token写入redis
+	utils.SetToken(user.ID, token)
+	// 更新用户登录IP和登录时间(不触发更新钩子)
+	last_login_ip := sql.NullString{String: c.IPs()[0], Valid: true}
+	last_login_time := sql.NullTime{Time: time.Now(), Valid: true}
+	result := models.DB.Model(&user).UpdateColumns(models.User{LastLoginIP: last_login_ip, LastLoginTime: last_login_time})
+	if result.Error != nil {
+		RespMsgSuccess(c, 8, result.Error.Error())
+	}
+	return c.JSON(fiber.Map{
+		"code":    0,
+		"message": "登录成功！",
+		"token":   token,
+	})
+}
 
 // 用户登出
 func Logout(c *fiber.Ctx) error { return nil }

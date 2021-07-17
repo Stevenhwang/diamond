@@ -28,7 +28,7 @@ func NewJWT(jwtSecret string) *JWT {
 }
 
 // EncodeToken token加密
-func (j *JWT) EncodeToken(uid int, username string, isSuperuser bool) string {
+func (j *JWT) EncodeToken(uid uint, username string, isSuperuser bool) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iat":          time.Now(),
 		"uid":          uid,
@@ -40,13 +40,13 @@ func (j *JWT) EncodeToken(uid int, username string, isSuperuser bool) string {
 }
 
 // DecodeToken token解密
-func (j *JWT) DecodeToken(tokenString string) (uid int, username string, isSuperuser bool) {
+func (j *JWT) DecodeToken(tokenString string) (uid uint, username string, isSuperuser bool) {
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return j.signKey, nil
 	})
 	if token != nil {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			return int(claims["uid"].(float64)), claims["username"].(string), claims["is_superuser"].(bool)
+			return uint(claims["uid"].(float64)), claims["username"].(string), claims["is_superuser"].(bool)
 		}
 	}
 	return 0, "", false
