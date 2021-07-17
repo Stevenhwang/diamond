@@ -47,7 +47,7 @@ func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 	return
 }
 
-func (u *User) GetUserList(c *fiber.Ctx) (users Users, total int64, err error) {
+func GetUserList(c *fiber.Ctx) (users Users, total int64, err error) {
 	users = Users{}
 	DB.Scopes(Filter(User{}, c)).Count(&total)
 	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Find(&users)
