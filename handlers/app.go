@@ -20,5 +20,17 @@ func App() *fiber.App {
 
 	app.Get("/users", UserList)
 
+	// rl := app.Stack()
+	// hn := []string{}
+	// for _, r := range rl {
+	// 	for _, k := range r {
+	// 		for _, val := range k.Handlers {
+	// 			hn = append(hn, utils.NameOfFunction(val))
+	// 		}
+	// 	}
+	// }
+	// hn = utils.RemoveDupInSlice(hn)
+	// log.Println(hn)
+
 	return app
 }
