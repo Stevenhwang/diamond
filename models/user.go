@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	"diamond/utils.go"
@@ -63,7 +64,38 @@ func (u *User) AfterCreate(tx *gorm.DB) (err error) {
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
-	return
+	if len(u.Password) > 0 {
+		pass, err := utils.GeneratePassword(u.Password)
+		if err != nil {
+			return err
+		}
+		u.Password = pass
+	}
+	// 处理otpkey更新
+	otpKey, _ := strconv.Atoi(u.GoogleKey.String)
+	if otpKey == 2 {
+		var accountName string
+		if len(u.Email.String) > 0 {
+			accountName = u.Email.String
+		} else {
+			accountName = u.Username + "@example.com"
+		}
+		key, err := totp.Generate(totp.GenerateOpts{
+			Issuer:      u.Username,
+			AccountName: accountName,
+		})
+		if err != nil {
+			return err
+		}
+		u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
+	} else if otpKey == 3 {
+		u.GoogleKey = sql.NullString{String: "", Valid: true}
+	}
+	// 处理is_active更新
+	if !u.IsActive {
+		utils.DelToken(1, int(u.ID))
+	}
+	return nil
 }
 
 func (u *User) AfterUpdate(tx *gorm.DB) (err error) {
