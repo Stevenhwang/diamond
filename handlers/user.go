@@ -164,4 +164,16 @@ func UpdateUserPerm(c *fiber.Ctx) error { return nil }
 func CreateUserPerm(c *fiber.Ctx) error { return nil }
 
 // 删除用户
-func DeleteUserPerm(c *fiber.Ctx) error { return nil }
+func DeleteUserPerm(c *fiber.Ctx) error {
+	user := &models.User{}
+	if result := models.DB.Find(user, c.Params("id")); result.Error != nil {
+		return RespMsgSuccess(c, 1, result.Error.Error())
+	}
+	if user.IsSuperuser {
+		return RespMsgSuccess(c, 2, "超级管理员不可被删除！")
+	}
+	if result := models.DB.Delete(user); result.Error != nil {
+		return RespMsgSuccess(c, 3, result.Error.Error())
+	}
+	return RespMsgSuccess(c, 0, "删除成功！")
+}

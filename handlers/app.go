@@ -25,6 +25,7 @@ func App() *fiber.App {
 	app.Post("/reset_pw", ResetPasswd)
 
 	app.Get("/users", UserListPerm)
+	app.Delete("/users/:id", DeleteUserPerm)
 
 	// rl := app.Stack()
 	// hn := []string{}
