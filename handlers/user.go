@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"diamond/models"
@@ -151,12 +150,11 @@ func ResetPasswd(c *fiber.Ctx) error {
 
 // 获取用户列表
 func UserListPerm(c *fiber.Ctx) error {
-	hn := make([]string, 0, len(c.Route().Handlers))
-	for _, val := range c.Route().Handlers {
-		hn = append(hn, utils.NameOfFunction(val))
+	users, total, err := models.GetUserList(c)
+	if err != nil {
+		return RespMsgSuccess(c, 1, err.Error())
 	}
-	log.Println(hn)
-	return nil
+	return RespDataSuccess(c, 0, users, total)
 }
 
 // 更新用户信息
