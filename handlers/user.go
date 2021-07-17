@@ -72,7 +72,53 @@ func Logout(c *fiber.Ctx) error {
 }
 
 // 用户获取个人信息
-func UserInfo(c *fiber.Ctx) error { return nil }
+func UserInfo(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(uint)
+	username := c.Locals("username").(string)
+	isSuperuser := c.Locals("is_superuser").(bool)
+	// 管理员
+	if isSuperuser {
+		menus := &models.Menus{}
+		if result := models.DB.Select("name").Find(menus); result.Error != nil {
+			return RespMsgSuccess(c, 1, result.Error.Error())
+		}
+		menuNames := make([]string, 0, len(*menus))
+		for _, v := range *menus {
+			menuNames = append(menuNames, v.Name)
+		}
+		return c.JSON(fiber.Map{
+			"code":         0,
+			"is_superuser": true,
+			"menus":        menuNames,
+			"username":     username,
+		})
+	}
+	// 普通用户
+	user := &models.User{}
+	menusMap := map[string]byte{}
+	if result := models.DB.Preload("Roles.Menus").First(user, uid); result.Error != nil {
+		return RespMsgSuccess(c, 1, result.Error.Error())
+	}
+	for _, role := range user.Roles {
+		if role.IsActive {
+			for _, menu := range role.Menus {
+				if menu.IsActive {
+					menusMap[menu.Name] = 0
+				}
+			}
+		}
+	}
+	menus := make([]string, 0, len(menusMap))
+	for k := range menusMap {
+		menus = append(menus, k)
+	}
+	return c.JSON(fiber.Map{
+		"code":         0,
+		"is_superuser": true,
+		"menus":        menus,
+		"username":     username,
+	})
+}
 
 // 用户重置密码
 func ResetPasswd(c *fiber.Ctx) error { return nil }

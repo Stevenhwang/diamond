@@ -9,12 +9,11 @@ func RespMsgSuccess(c *fiber.Ctx, code int, message string) error {
 	})
 }
 
-func RespDataSuccess(c *fiber.Ctx, code int, message string, data []interface{}, total int) error {
+func RespDataSuccess(c *fiber.Ctx, code int, data interface{}, total int64) error {
 	return c.JSON(fiber.Map{
-		"code":    code,
-		"message": message,
-		"data":    data,
-		"total":   total,
+		"code":  code,
+		"data":  data,
+		"total": total,
 	})
 }
 

@@ -14,3 +14,5 @@ type Menu struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type Menus []Menu
