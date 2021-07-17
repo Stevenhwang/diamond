@@ -121,7 +121,33 @@ func UserInfo(c *fiber.Ctx) error {
 }
 
 // 用户重置密码
-func ResetPasswd(c *fiber.Ctx) error { return nil }
+func ResetPasswd(c *fiber.Ctx) error {
+	type resetPw struct {
+		OldPw  string `json:"old_pw"`
+		NewPw1 string `json:"new_pw1"`
+		NewPw2 string `json:"new_pw2"`
+	}
+	rpw := &resetPw{}
+	if err := c.BodyParser(rpw); err != nil {
+		return RespMsgSuccess(c, 1, err.Error())
+	}
+	if len(rpw.OldPw) == 0 || len(rpw.NewPw1) == 0 || len(rpw.NewPw2) == 0 {
+		return RespMsgSuccess(c, 2, "关键参数不能为空！")
+	}
+	if rpw.NewPw1 != rpw.NewPw2 {
+		return RespMsgSuccess(c, 3, "两个新密码输入不一致！")
+	}
+	uid := c.Locals("uid").(uint)
+	user := &models.User{}
+	if result := models.DB.Find(user, uid); result.Error != nil {
+		return RespMsgSuccess(c, 4, result.Error.Error())
+	}
+	if !utils.CheckPassword(user.Password, rpw.OldPw) {
+		return RespMsgSuccess(c, 5, "原始密码错误！")
+	}
+	models.DB.Model(&user).Update("password", rpw.NewPw1)
+	return RespMsgSuccess(c, 0, "修改密码成功！")
+}
 
 // 获取用户列表
 func UserListPerm(c *fiber.Ctx) error {

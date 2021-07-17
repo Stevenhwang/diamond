@@ -20,6 +20,10 @@ func App() *fiber.App {
 
 	app.Use(authTokenMW)
 	app.Post("/login", Login)
+	app.Post("/logout", Logout)
+	app.Get("/user_info", UserInfo)
+	app.Post("/reset_pw", ResetPasswd)
+
 	app.Get("/users", UserListPerm)
 
 	// rl := app.Stack()
