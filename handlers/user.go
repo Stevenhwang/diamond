@@ -1,6 +1,12 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"log"
+
+	"diamond/utils.go"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 // 用户登录
 func Login(c *fiber.Ctx) error { return nil }
@@ -15,7 +21,14 @@ func UserInfo(c *fiber.Ctx) error { return nil }
 func ResetPasswd(c *fiber.Ctx) error { return nil }
 
 // 获取用户列表
-func UserList(c *fiber.Ctx) error { return nil }
+func UserList(c *fiber.Ctx) error {
+	hn := make([]string, 0, len(c.Route().Handlers))
+	for _, val := range c.Route().Handlers {
+		hn = append(hn, utils.NameOfFunction(val))
+	}
+	log.Println(hn)
+	return nil
+}
 
 // 更新用户信息
 func UpdateUser(c *fiber.Ctx) error { return nil }

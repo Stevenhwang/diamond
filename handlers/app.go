@@ -14,9 +14,11 @@ func App() *fiber.App {
 	// routers
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"message": "Hello World",
+			"message": "Hello from diamond!",
 		})
 	})
+
+	app.Get("/users", UserList)
 
 	return app
 }

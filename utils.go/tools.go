@@ -4,10 +4,17 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"math/rand"
+	"reflect"
+	"runtime"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+// NameOfFunction 获取函数的名字
+func NameOfFunction(f interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+}
 
 // FindValInSlice 查询val是否在 string slice 中
 func FindValInSlice(slice []string, val string) bool {
