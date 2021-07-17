@@ -19,8 +19,8 @@ type User struct {
 	IsActive      bool           `gorm:"default:true"`
 	IsSuperuser   bool           `gorm:"default:false"`
 	LastLoginIP   sql.NullString `gorm:"size:128" filter:"last_login_ip"`
-	LastLoginTime sql.NullTime   `filter:"last_login_time"`
-	Roles         []*Role        `gorm:"many2many:user_roles"`
+	LastLoginTime sql.NullTime
+	Roles         []*Role `gorm:"many2many:user_roles"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
