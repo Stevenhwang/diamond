@@ -14,19 +14,19 @@ import (
 
 type User struct {
 	ID            uint
-	Username      string         `gorm:"size:128" filter:"username"`
-	Password      string         `gorm:"size:128"`
-	Email         sql.NullString `gorm:"size:128" filter:"email"`
-	Telephone     sql.NullString `gorm:"size:20" filter:"telephone"`
-	Department    sql.NullString `gorm:"size:128" filter:"department"`
-	GoogleKey     sql.NullString `gorm:"size:256"`
-	IsActive      bool           `gorm:"default:true"`
-	IsSuperuser   bool           `gorm:"default:false"`
-	LastLoginIP   sql.NullString `gorm:"size:128" filter:"last_login_ip"`
-	LastLoginTime sql.NullTime
-	Roles         []*Role `gorm:"many2many:user_roles"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	Username      string         `gorm:"size:128" filter:"username" json:"username"`
+	Password      string         `gorm:"size:128" json:"password"`
+	Email         sql.NullString `gorm:"size:128" filter:"email" json:"email"`
+	Telephone     sql.NullString `gorm:"size:20" filter:"telephone" json:"telephone"`
+	Department    sql.NullString `gorm:"size:128" filter:"department" json:"department"`
+	GoogleKey     sql.NullString `gorm:"size:256" json:"google_key"`
+	IsActive      bool           `gorm:"default:true" json:"is_active"`
+	IsSuperuser   bool           `gorm:"default:false" json:"is_superuser"`
+	LastLoginIP   sql.NullString `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
+	LastLoginTime sql.NullTime   `json:"last_login_time"`
+	Roles         []*Role        `gorm:"many2many:user_roles"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 type Users []User
