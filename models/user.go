@@ -93,7 +93,7 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	}
 	// 处理is_active更新
 	if !u.IsActive {
-		utils.DelToken(1, int(u.ID))
+		utils.DelToken(u.ID)
 	}
 	return nil
 }

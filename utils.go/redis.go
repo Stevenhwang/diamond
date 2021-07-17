@@ -29,7 +29,7 @@ func init() {
 }
 
 // SetToken 更新用户token, 默认是24小时过期
-func SetToken(typ int, uid int, token string) {
+func SetToken(uid uint, token string) {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
 	err := RDClient.Set(ctx, key, token, 24*time.Hour).Err()
@@ -39,7 +39,7 @@ func SetToken(typ int, uid int, token string) {
 }
 
 // GetToken 查询用户token
-func GetToken(typ int, uid int) string {
+func GetToken(uid uint) string {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
 	token, err := RDClient.Get(ctx, key).Result()
@@ -50,7 +50,7 @@ func GetToken(typ int, uid int) string {
 }
 
 // DelToken 删除用户token
-func DelToken(typ int, uid int) {
+func DelToken(uid uint) {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
 	err := RDClient.Del(ctx, key).Err()
