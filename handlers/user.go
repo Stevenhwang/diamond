@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	"diamond/models"
@@ -158,10 +159,40 @@ func UserListPerm(c *fiber.Ctx) error {
 }
 
 // 更新用户信息
-func UpdateUserPerm(c *fiber.Ctx) error { return nil }
+func UpdateUserPerm(c *fiber.Ctx) error {
+	user := &models.User{}
+	if result := models.DB.Find(user, c.Params("id")); result.Error != nil {
+		return RespMsgSuccess(c, 1, result.Error.Error())
+	}
+	if err := c.BodyParser(user); err != nil {
+		return RespMsgSuccess(c, 2, err.Error())
+	}
+	// 处理password和otp_key更新
+	excludeColumns := []string{}
+	if len(user.Password) == 0 {
+		excludeColumns = append(excludeColumns, "password")
+	}
+	otpKey, _ := strconv.Atoi(user.GoogleKey.String)
+	if otpKey == 1 {
+		excludeColumns = append(excludeColumns, "google_key")
+	}
+	if result := models.DB.Omit(excludeColumns...).Updates(user); result.Error != nil {
+		return RespMsgSuccess(c, 3, result.Error.Error())
+	}
+	return RespMsgSuccess(c, 0, "更新成功！")
+}
 
 // 新建用户
-func CreateUserPerm(c *fiber.Ctx) error { return nil }
+func CreateUserPerm(c *fiber.Ctx) error {
+	user := &models.User{}
+	if err := c.BodyParser(user); err != nil {
+		return RespMsgSuccess(c, 1, err.Error())
+	}
+	if result := models.DB.Create(user); result.Error != nil {
+		return RespMsgSuccess(c, 2, result.Error.Error())
+	}
+	return RespMsgSuccess(c, 0, "创建成功！")
+}
 
 // 删除用户
 func DeleteUserPerm(c *fiber.Ctx) error {

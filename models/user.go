@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"strconv"
 	"time"
 
@@ -32,6 +33,9 @@ type User struct {
 type Users []User
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	if len(u.Username) == 0 {
+		return errors.New("用户名不能为空")
+	}
 	// set password
 	if len(u.Password) == 0 {
 		u.Password = "12345678" // 默认密码
@@ -68,6 +72,9 @@ func (u *User) AfterCreate(tx *gorm.DB) (err error) {
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	if len(u.Username) == 0 {
+		return errors.New("用户名不能为空")
+	}
 	if len(u.Password) > 0 {
 		pass, err := utils.GeneratePassword(u.Password)
 		if err != nil {
