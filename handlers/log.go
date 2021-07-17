@@ -1,6 +1,16 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"diamond/models"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 // 获取系统日志
-func LogList(c *fiber.Ctx) error { return nil }
+func LogListPerm(c *fiber.Ctx) error {
+	logs, total, err := models.GetLogList(c)
+	if err != nil {
+		return RespMsgSuccess(c, 1, err.Error())
+	}
+	return RespDataSuccess(c, 0, logs, total)
+}

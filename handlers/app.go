@@ -29,6 +29,8 @@ func App() *fiber.App {
 	app.Put("/users/:id", UpdateUserPerm)
 	app.Delete("/users/:id", DeleteUserPerm)
 
+	app.Get("/logs", LogListPerm)
+
 	// rl := app.Stack()
 	// hn := []string{}
 	// for _, r := range rl {
