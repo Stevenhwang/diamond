@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// 分页
 func Paginate(c *fiber.Ctx) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		page, _ := strconv.Atoi(c.Query("page", "1"))
