@@ -21,29 +21,29 @@ func Login(c *fiber.Ctx) error {
 	}
 	lg := &login{}
 	if err := c.BodyParser(lg); err != nil {
-		RespMsgSuccess(c, 1, err.Error())
+		return RespMsgSuccess(c, 1, err.Error())
 	}
 	if len(lg.Username) == 0 || len(lg.Password) == 0 {
-		RespMsgSuccess(c, 2, "用户名或密码不能为空！")
+		return RespMsgSuccess(c, 2, "用户名或密码不能为空！")
 	}
 	user := &models.User{}
 	if err := models.DB.Where("username = ?", lg.Username).First(user); err != nil {
-		RespMsgSuccess(c, 3, "用户不存在！")
+		return RespMsgSuccess(c, 3, "用户不存在！")
 	}
 	// 验证密码
 	if !utils.CheckPassword(user.Password, lg.Password) {
-		RespMsgSuccess(c, 4, "密码错误！")
+		return RespMsgSuccess(c, 4, "密码错误！")
 	}
 	if !user.IsActive {
-		RespMsgSuccess(c, 5, "账号被禁用！")
+		return RespMsgSuccess(c, 5, "账号被禁用！")
 	}
 	if len(user.GoogleKey.String) > 0 {
 		if len(lg.Otp) == 0 {
-			RespMsgSuccess(c, 6, "需要二次认证验证码！")
+			return RespMsgSuccess(c, 6, "需要二次认证验证码！")
 		}
 		valid := totp.Validate(lg.Otp, user.GoogleKey.String)
 		if !valid {
-			RespMsgSuccess(c, 7, "验证码错误！")
+			return RespMsgSuccess(c, 7, "验证码错误！")
 		}
 	}
 	// 生成token
@@ -55,7 +55,7 @@ func Login(c *fiber.Ctx) error {
 	last_login_time := sql.NullTime{Time: time.Now(), Valid: true}
 	result := models.DB.Model(&user).UpdateColumns(models.User{LastLoginIP: last_login_ip, LastLoginTime: last_login_time})
 	if result.Error != nil {
-		RespMsgSuccess(c, 8, result.Error.Error())
+		return RespMsgSuccess(c, 8, result.Error.Error())
 	}
 	return c.JSON(fiber.Map{
 		"code":    0,
@@ -65,7 +65,11 @@ func Login(c *fiber.Ctx) error {
 }
 
 // 用户登出
-func Logout(c *fiber.Ctx) error { return nil }
+func Logout(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(uint)
+	utils.DelToken(uid)
+	return RespMsgSuccess(c, 0, "注销成功！")
+}
 
 // 用户获取个人信息
 func UserInfo(c *fiber.Ctx) error { return nil }
