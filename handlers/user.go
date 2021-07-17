@@ -21,7 +21,7 @@ func UserInfo(c *fiber.Ctx) error { return nil }
 func ResetPasswd(c *fiber.Ctx) error { return nil }
 
 // 获取用户列表
-func UserList(c *fiber.Ctx) error {
+func UserListPerm(c *fiber.Ctx) error {
 	hn := make([]string, 0, len(c.Route().Handlers))
 	for _, val := range c.Route().Handlers {
 		hn = append(hn, utils.NameOfFunction(val))
@@ -31,10 +31,10 @@ func UserList(c *fiber.Ctx) error {
 }
 
 // 更新用户信息
-func UpdateUser(c *fiber.Ctx) error { return nil }
+func UpdateUserPerm(c *fiber.Ctx) error { return nil }
 
 // 新建用户
-func CreateUser(c *fiber.Ctx) error { return nil }
+func CreateUserPerm(c *fiber.Ctx) error { return nil }
 
 // 删除用户
-func DeleteUser(c *fiber.Ctx) error { return nil }
+func DeleteUserPerm(c *fiber.Ctx) error { return nil }

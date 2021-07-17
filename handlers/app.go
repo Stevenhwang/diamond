@@ -18,7 +18,7 @@ func App() *fiber.App {
 		})
 	})
 
-	app.Get("/users", UserList)
+	app.Get("/users", UserListPerm)
 
 	// rl := app.Stack()
 	// hn := []string{}
