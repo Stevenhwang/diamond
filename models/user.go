@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +25,8 @@ type User struct {
 	UpdatedAt     time.Time
 }
 
+type Users []User
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
@@ -36,13 +39,17 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	return
 }
 
-// 在同一个事务中更新数据
 func (u *User) AfterUpdate(tx *gorm.DB) (err error) {
-
 	return
 }
 
-// 在同一个事务中更新数据
 func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 	return
+}
+
+func (u *User) GetUserList(c *fiber.Ctx) (users Users, total int64, err error) {
+	users = Users{}
+	DB.Scopes(Filter(User{}, c)).Count(&total)
+	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Find(&users)
+	return users, total, result.Error
 }
