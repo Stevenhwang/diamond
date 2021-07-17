@@ -10,6 +10,10 @@ import (
 )
 
 func authTokenMW(c *fiber.Ctx) error {
+	// 登录接口跳过
+	if c.Path() == "/login" {
+		return c.Next()
+	}
 	xToken := c.Get("X-Token")
 	if len(xToken) == 0 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
