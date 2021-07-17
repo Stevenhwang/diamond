@@ -4,14 +4,17 @@ import (
 	"database/sql"
 	"time"
 
+	"diamond/utils.go"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/pquerna/otp/totp"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	ID            uint
-	UserName      string         `gorm:"size:128" filter:"username"`
-	PassWord      string         `gorm:"size:128"`
+	Username      string         `gorm:"size:128" filter:"username"`
+	Password      string         `gorm:"size:128"`
 	Email         sql.NullString `gorm:"size:128" filter:"email"`
 	Telephone     sql.NullString `gorm:"size:20" filter:"telephone"`
 	Department    sql.NullString `gorm:"size:128" filter:"department"`
@@ -28,7 +31,31 @@ type User struct {
 type Users []User
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	return
+	// set password
+	if len(u.Password) == 0 {
+		u.Password = "12345678" // 默认密码
+	}
+	pass, err := utils.GeneratePassword(u.Password)
+	if err != nil {
+		return err
+	}
+	u.Password = pass
+	// generate otp key
+	var accountName string
+	if len(u.Email.String) > 0 {
+		accountName = u.Email.String
+	} else {
+		accountName = u.Username + "@example.com"
+	}
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      u.Username,
+		AccountName: accountName,
+	})
+	if err != nil {
+		return err
+	}
+	u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
+	return nil
 }
 
 func (u *User) AfterCreate(tx *gorm.DB) (err error) {
