@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	ID            uint
-	Username      string         `gorm:"size:128" filter:"username" json:"username"`
+	Username      string         `gorm:"size:128;unique" filter:"username" json:"username"`
 	Password      string         `gorm:"size:128" json:"password"`
 	Email         sql.NullString `gorm:"size:128" filter:"email" json:"email"`
 	Telephone     sql.NullString `gorm:"size:20" filter:"telephone" json:"telephone"`
