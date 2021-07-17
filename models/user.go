@@ -10,17 +10,17 @@ import (
 
 type User struct {
 	ID            uint
-	UserName      string         `gorm:"size:128"`
+	UserName      string         `gorm:"size:128" filter:"username"`
 	PassWord      string         `gorm:"size:128"`
-	Email         sql.NullString `gorm:"size:128"`
-	Telephone     sql.NullString `gorm:"size:20"`
-	Department    sql.NullString `gorm:"size:128"`
+	Email         sql.NullString `gorm:"size:128" filter:"email"`
+	Telephone     sql.NullString `gorm:"size:20" filter:"telephone"`
+	Department    sql.NullString `gorm:"size:128" filter:"department"`
 	GoogleKey     sql.NullString `gorm:"size:256"`
 	IsActive      bool           `gorm:"default:true"`
 	IsSuperuser   bool           `gorm:"default:false"`
-	LastLoginIP   sql.NullString `gorm:"size:128"`
-	LastLoginTime sql.NullTime
-	Roles         []*Role `gorm:"many2many:user_roles"`
+	LastLoginIP   sql.NullString `gorm:"size:128" filter:"last_login_ip"`
+	LastLoginTime sql.NullTime   `filter:"last_login_time"`
+	Roles         []*Role        `gorm:"many2many:user_roles"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
