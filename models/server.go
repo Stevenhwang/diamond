@@ -6,17 +6,17 @@ import (
 )
 
 type Server struct {
-	ID        uint
-	IP        string         `gorm:"size:128"`
-	Remark    sql.NullString `gorm:"size:128"`
-	Port      int
-	User      string         `gorm:"size:128"`
-	AuthType  int            // 1密码验证 2密钥验证
-	Password  sql.NullString `gorm:"size:128"`
-	Key       sql.NullString `gorm:"type:text"`
+	ID        uint           `json:"id"`
+	IP        string         `gorm:"size:128" json:"ip"`
+	Remark    sql.NullString `gorm:"size:128" json:"remark"`
+	Port      int            `json:"port"`
+	User      string         `gorm:"size:128" json:"user"`
+	AuthType  int            `json:"auth_type"` // 1密码验证 2密钥验证
+	Password  sql.NullString `gorm:"size:128" json:"password"`
+	Key       sql.NullString `gorm:"type:text" json:"key"`
 	GroupID   uint
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Servers []Server
