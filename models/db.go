@@ -13,7 +13,7 @@ import (
 var DB *gorm.DB
 
 func init() {
-	host := config.Config.Get("mysql.gost")
+	host := config.Config.Get("mysql.host")
 	port := config.Config.Get("mysql.port")
 	user := config.Config.Get("mysql.user")
 	password := config.Config.Get("mysql.password")
