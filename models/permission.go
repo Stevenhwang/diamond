@@ -9,3 +9,5 @@ type Permission struct {
 	IsActive bool           `gorm:"default:true"`
 	Roles    []*Role        `gorm:"many2many:role_permissions"`
 }
+
+type Permissions []Permission

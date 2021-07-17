@@ -13,3 +13,5 @@ type Role struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+
+type Roles []Role

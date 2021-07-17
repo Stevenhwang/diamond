@@ -13,3 +13,5 @@ type Group struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type Groups []Group

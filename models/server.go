@@ -18,3 +18,5 @@ type Server struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type Servers []Server

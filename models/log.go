@@ -14,3 +14,5 @@ type Log struct {
 	Data      sql.NullString `gorm:"type:text"`
 	CreatedAt time.Time
 }
+
+type Logs []Log
