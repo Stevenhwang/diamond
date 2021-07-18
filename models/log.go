@@ -6,10 +6,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Log struct {
-	ID        uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4()" json:"id"`
+	ID        uuid.UUID      `gorm:"type:char(36);primary_key" json:"id"`
 	Username  string         `gorm:"size:128" json:"username"`
 	IP        string         `gorm:"size:128" json:"ip"`
 	Method    string         `gorm:"size:16" json:"method"`
@@ -19,6 +20,15 @@ type Log struct {
 }
 
 type Logs []Log
+
+func (l *Log) BeforeCreate(tx *gorm.DB) (err error) {
+	x, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+	l.ID = x
+	return nil
+}
 
 func GetLogList(c *fiber.Ctx) (logs Logs, total int64, err error) {
 	logs = Logs{}
