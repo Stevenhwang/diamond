@@ -18,6 +18,7 @@ func App() *fiber.App {
 		})
 	})
 
+	app.Use(realIPMW)
 	app.Use(authTokenMW)
 	app.Post("/login", Login)
 	app.Post("/logout", Logout)

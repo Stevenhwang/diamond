@@ -27,7 +27,7 @@ func Login(c *fiber.Ctx) error {
 		return RespMsgSuccess(c, 2, "用户名或密码不能为空！")
 	}
 	user := &models.User{}
-	if err := models.DB.Where("username = ?", lg.Username).First(user); err != nil {
+	if result := models.DB.Where("username = ?", lg.Username).First(user); result.Error != nil {
 		return RespMsgSuccess(c, 3, "用户不存在！")
 	}
 	// 验证密码
@@ -51,7 +51,7 @@ func Login(c *fiber.Ctx) error {
 	// 将token写入redis
 	utils.SetToken(user.ID, token)
 	// 更新用户登录IP和登录时间(不触发更新钩子)
-	last_login_ip := sql.NullString{String: c.IPs()[0], Valid: true}
+	last_login_ip := sql.NullString{String: c.Locals("user_ip").(string), Valid: true}
 	last_login_time := sql.NullTime{Time: time.Now(), Valid: true}
 	result := models.DB.Model(&user).UpdateColumns(models.User{LastLoginIP: last_login_ip, LastLoginTime: last_login_time})
 	if result.Error != nil {

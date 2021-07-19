@@ -9,11 +9,25 @@ import (
 	fiberUtils "github.com/gofiber/fiber/v2/utils"
 )
 
+func realIPMW(c *fiber.Ctx) error {
+	if xRealIP := c.Get("X-Real-Ip"); len(xRealIP) > 0 {
+		c.Locals("user_ip", xRealIP)
+		return c.Next()
+	}
+	if xForwardedFor := c.IPs(); len(xForwardedFor) > 0 {
+		c.Locals("user_ip", xForwardedFor[0])
+		return c.Next()
+	}
+	c.Locals("user_ip", c.IP())
+	return c.Next()
+}
+
 func authTokenMW(c *fiber.Ctx) error {
 	// 登录接口跳过
 	if c.Path() == "/login" {
 		return c.Next()
 	}
+	// 检查token
 	xToken := c.Get("X-Token")
 	if len(xToken) == 0 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -24,14 +38,14 @@ func authTokenMW(c *fiber.Ctx) error {
 	uid, username, isSuperuser := utils.J.DecodeToken(xToken)
 	if uid == 0 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"code":    1,
+			"code":    2,
 			"message": "Token非法!",
 		})
 	}
 	rdToken := utils.GetToken(uid)
 	if len(rdToken) == 0 || rdToken != xToken {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"code":    1,
+			"code":    3,
 			"message": "Token失效!",
 		})
 	}
