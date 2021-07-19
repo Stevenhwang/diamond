@@ -20,7 +20,7 @@ type Groups []Group
 
 func GetGroupList(c *fiber.Ctx) (groups Groups, total int64, err error) {
 	groups = Groups{}
-	DB.Scopes(Filter(Group{}, c)).Count(&total)
+	DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Group{}, c), Paginate(c)).Find(&groups)
 	return groups, total, result.Error
 }

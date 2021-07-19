@@ -21,7 +21,7 @@ type Menus []Menu
 
 func GetMenuList(c *fiber.Ctx) (menus Menus, total int64, err error) {
 	menus = Menus{}
-	DB.Scopes(Filter(Menu{}, c)).Count(&total)
+	DB.Model(&Menu{}).Scopes(Filter(Menu{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Menu{}, c), Paginate(c)).Find(&menus)
 	return menus, total, result.Error
 }

@@ -18,7 +18,7 @@ type Permissions []Permission
 
 func GetPermissionList(c *fiber.Ctx) (permissions Permissions, total int64, err error) {
 	permissions = Permissions{}
-	DB.Scopes(Filter(Permission{}, c)).Count(&total)
+	DB.Model(&Permission{}).Scopes(Filter(Permission{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Permission{}, c), Paginate(c)).Find(&permissions)
 	return permissions, total, result.Error
 }

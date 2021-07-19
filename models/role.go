@@ -22,7 +22,7 @@ type Roles []Role
 
 func GetRoleList(c *fiber.Ctx) (roles Roles, total int64, err error) {
 	roles = Roles{}
-	DB.Scopes(Filter(Role{}, c)).Count(&total)
+	DB.Model(&Role{}).Scopes(Filter(Role{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Role{}, c), Paginate(c)).Find(&roles)
 	return roles, total, result.Error
 }

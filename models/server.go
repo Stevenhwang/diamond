@@ -25,7 +25,7 @@ type Servers []Server
 
 func GetServerList(c *fiber.Ctx) (servers Servers, total int64, err error) {
 	servers = Servers{}
-	DB.Scopes(Filter(Server{}, c)).Count(&total)
+	DB.Model(&Server{}).Scopes(Filter(Server{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Find(&servers)
 	return servers, total, result.Error
 }

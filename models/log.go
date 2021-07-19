@@ -32,7 +32,7 @@ func (l *Log) BeforeCreate(tx *gorm.DB) (err error) {
 
 func GetLogList(c *fiber.Ctx) (logs Logs, total int64, err error) {
 	logs = Logs{}
-	query := DB.Scopes(Filter(Log{}, c))
+	query := DB.Model(&Log{}).Scopes(Filter(Log{}, c))
 	if len(c.Params("date_before")) > 0 {
 		query.Where("created_at <= ?", c.Params("date_before"))
 	}

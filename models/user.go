@@ -119,7 +119,7 @@ func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 
 func GetUserList(c *fiber.Ctx) (users Users, total int64, err error) {
 	users = Users{}
-	DB.Scopes(Filter(User{}, c)).Count(&total)
+	DB.Model(&User{}).Scopes(Filter(User{}, c)).Count(&total)
 	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Omit("password").Find(&users)
 	return users, total, result.Error
 }
