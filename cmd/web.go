@@ -3,7 +3,6 @@ package cmd
 import (
 	"diamond/config"
 	"diamond/handlers"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +14,7 @@ var webCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := handlers.App()
 		addr := config.Config.Get("web.addr").(string)
-		log.Fatal(app.Listen(addr))
+		app.Run(addr)
 	},
 }
 

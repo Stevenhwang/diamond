@@ -8,7 +8,7 @@ import (
 
 	"diamond/utils.go"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/pquerna/otp/totp"
 	"gorm.io/gorm"
 )
@@ -117,7 +117,7 @@ func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 	return
 }
 
-func GetUserList(c *fiber.Ctx) (users Users, total int64, err error) {
+func GetUserList(c *gin.Context) (users Users, total int64, err error) {
 	users = Users{}
 	DB.Model(&User{}).Scopes(Filter(User{}, c)).Count(&total)
 	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Omit("password").Find(&users)

@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type Permission struct {
@@ -16,7 +16,7 @@ type Permission struct {
 
 type Permissions []Permission
 
-func GetPermissionList(c *fiber.Ctx) (permissions Permissions, total int64, err error) {
+func GetPermissionList(c *gin.Context) (permissions Permissions, total int64, err error) {
 	permissions = Permissions{}
 	DB.Model(&Permission{}).Scopes(Filter(Permission{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Permission{}, c), Paginate(c)).Find(&permissions)

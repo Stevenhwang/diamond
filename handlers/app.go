@@ -1,48 +1,43 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func App() *fiber.App {
-	app := fiber.New()
-	app.Use(logger.New())
-	app.Use(recover.New())
+func App() *gin.Engine {
+	app := gin.New()
+	app.Use(gin.Logger())
+	app.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		if err, ok := recovered.(string); ok {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("error: %s", err),
+			})
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}))
 
 	// routers
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
+	app.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
 			"message": "Hello from diamond!",
 		})
 	})
 
-	app.Use(realIPMW)
-	app.Use(authTokenMW)
-	app.Post("/login", Login)
-	app.Post("/logout", Logout)
-	app.Get("/user_info", UserInfo)
-	app.Post("/reset_pw", ResetPasswd)
+	app.Use(authTokenMW())
+	app.POST("/login", Login)
+	app.POST("/logout", Logout)
+	app.GET("/user_info", UserInfo)
+	app.POST("/reset_pw", ResetPasswd)
 
-	app.Get("/users", UserListPerm)
-	app.Post("/users", CreateUserPerm)
-	app.Put("/users/:id", UpdateUserPerm)
-	app.Delete("/users/:id", DeleteUserPerm)
+	app.GET("/users", UserListPerm)
+	app.POST("/users", CreateUserPerm)
+	app.PUT("/users/:id", UpdateUserPerm)
+	app.DELETE("/users/:id", DeleteUserPerm)
 
-	app.Get("/logs", LogListPerm)
-
-	// rl := app.Stack()
-	// hn := []string{}
-	// for _, r := range rl {
-	// 	for _, k := range r {
-	// 		for _, val := range k.Handlers {
-	// 			hn = append(hn, utils.NameOfFunction(val))
-	// 		}
-	// 	}
-	// }
-	// hn = utils.RemoveDupInSlice(hn)
-	// log.Println(hn)
+	app.GET("/logs", LogListPerm)
 
 	return app
 }

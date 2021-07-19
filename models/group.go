@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type Group struct {
@@ -18,7 +18,7 @@ type Group struct {
 
 type Groups []Group
 
-func GetGroupList(c *fiber.Ctx) (groups Groups, total int64, err error) {
+func GetGroupList(c *gin.Context) (groups Groups, total int64, err error) {
 	groups = Groups{}
 	DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Group{}, c), Paginate(c)).Find(&groups)

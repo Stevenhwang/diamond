@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type Menu struct {
@@ -19,7 +19,7 @@ type Menu struct {
 
 type Menus []Menu
 
-func GetMenuList(c *fiber.Ctx) (menus Menus, total int64, err error) {
+func GetMenuList(c *gin.Context) (menus Menus, total int64, err error) {
 	menus = Menus{}
 	DB.Model(&Menu{}).Scopes(Filter(Menu{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Menu{}, c), Paginate(c)).Find(&menus)

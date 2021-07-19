@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type Role struct {
@@ -20,7 +20,7 @@ type Role struct {
 
 type Roles []Role
 
-func GetRoleList(c *fiber.Ctx) (roles Roles, total int64, err error) {
+func GetRoleList(c *gin.Context) (roles Roles, total int64, err error) {
 	roles = Roles{}
 	DB.Model(&Role{}).Scopes(Filter(Role{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Role{}, c), Paginate(c)).Find(&roles)

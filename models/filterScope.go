@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // 数据过滤，链式，like查询，针对string字段
-func Filter(model interface{}, c *fiber.Ctx) func(db *gorm.DB) *gorm.DB {
+func Filter(model interface{}, c *gin.Context) func(db *gorm.DB) *gorm.DB {
 	reflectType := reflect.ValueOf(model).Type()
 	return func(db *gorm.DB) *gorm.DB {
 		for i := 0; i < reflectType.NumField(); i++ {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -30,14 +30,14 @@ func (l *Log) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func GetLogList(c *fiber.Ctx) (logs Logs, total int64, err error) {
+func GetLogList(c *gin.Context) (logs Logs, total int64, err error) {
 	logs = Logs{}
 	query := DB.Model(&Log{}).Scopes(Filter(Log{}, c))
-	if len(c.Params("date_before")) > 0 {
-		query.Where("created_at <= ?", c.Params("date_before"))
+	if len(c.Query("date_before")) > 0 {
+		query.Where("created_at <= ?", c.Query("date_before"))
 	}
-	if len(c.Params("date_after")) > 0 {
-		query.Where("created_at >= ?", c.Params("date_after"))
+	if len(c.Query("date_after")) > 0 {
+		query.Where("created_at >= ?", c.Query("date_after"))
 	}
 	query.Count(&total)
 	result := query.Scopes(Paginate(c)).Order("created_at desc").Find(&logs)

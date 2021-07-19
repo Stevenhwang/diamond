@@ -1,25 +1,20 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func RespMsgSuccess(c *fiber.Ctx, code int, message string) error {
-	return c.JSON(fiber.Map{
+func respMsg(c *gin.Context, code int, message string) {
+	c.JSON(200, gin.H{
 		"code":    code,
 		"message": message,
 	})
 }
 
-func RespDataSuccess(c *fiber.Ctx, code int, data interface{}, total int64) error {
-	return c.JSON(fiber.Map{
+func respData(c *gin.Context, code int, data interface{}, total int64) {
+	c.JSON(200, gin.H{
 		"code":  code,
 		"data":  data,
 		"total": total,
-	})
-}
-
-func RespError(c *fiber.Ctx, message string) error {
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		"code":    500,
-		"message": message,
 	})
 }

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
@@ -23,7 +23,7 @@ type Server struct {
 
 type Servers []Server
 
-func GetServerList(c *fiber.Ctx) (servers Servers, total int64, err error) {
+func GetServerList(c *gin.Context) (servers Servers, total int64, err error) {
 	servers = Servers{}
 	DB.Model(&Server{}).Scopes(Filter(Server{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Find(&servers)

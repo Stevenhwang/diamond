@@ -1,15 +1,17 @@
 package handlers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 // 获取权限列表
-func PermissionList(c *fiber.Ctx) error { return nil }
+func PermissionList(c *gin.Context) {}
 
 // 更新权限信息
-func UpdatePermission(c *fiber.Ctx) error { return nil }
+func UpdatePermission(c *gin.Context) {}
 
 // 新建权限
-func CreatePermission(c *fiber.Ctx) error { return nil }
+func CreatePermission(c *gin.Context) {}
 
 // 删除权限
-func DeletePermission(c *fiber.Ctx) error { return nil }
+func DeletePermission(c *gin.Context) {}
