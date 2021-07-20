@@ -38,8 +38,9 @@ func passwordHandler(ctx ssh.Context, password string) bool {
 
 func sshHandler(s ssh.Session) {
 	// 登录成功后提示信息
-	io.WriteString(s, fmt.Sprintf("\n*****Connections will only last %s*****\n", DeadlineTimeout))
-	io.WriteString(s, fmt.Sprintf("*****Timeout after %s of no activity*****\n\n", IdleTimeout))
+	io.WriteString(s, "\n***** Welcome to diamond *****\n")
+	io.WriteString(s, fmt.Sprintf("\n***** Connections will only last %s *****\n", DeadlineTimeout))
+	io.WriteString(s, fmt.Sprintf("\n***** Timeout after %s of no activity *****\n", IdleTimeout))
 	// 连接数据库获取信息
 	dsn := "root:#yz2NRz30d_>m^:n90^V@tcp(192.168.241.130:3306)/Bumblebee-new"
 	db, err := sqlx.Open("mysql", dsn)
