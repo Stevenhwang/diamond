@@ -17,7 +17,22 @@ func PermissionListPerm(c *gin.Context) {
 }
 
 // 更新权限信息
-func UpdatePermissionPerm(c *gin.Context) {}
+func UpdatePermissionPerm(c *gin.Context) {
+	perm := &models.Permission{}
+	if result := models.DB.Find(perm, c.Param("id")); result.Error != nil {
+		respMsg(c, 1, result.Error.Error())
+		return
+	}
+	if perm.IsActive {
+		perm.IsActive = false
+		models.DB.Save(perm)
+		respMsg(c, 0, "权限禁用成功！")
+	} else {
+		perm.IsActive = true
+		models.DB.Save(perm)
+		respMsg(c, 0, "权限启用成功！")
+	}
+}
 
 // 新建权限
 func CreatePermission(c *gin.Context) {}

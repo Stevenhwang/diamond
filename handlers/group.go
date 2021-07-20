@@ -57,6 +57,7 @@ func DeleteGroupPerm(c *gin.Context) {
 	respMsg(c, 0, "删除成功！")
 }
 
+// 给服务器组添加服务器
 func ServersAssignPerm(c *gin.Context) {
 	type serversAssign struct {
 		Servers []int `json:"servers"`
