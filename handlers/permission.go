@@ -1,14 +1,23 @@
 package handlers
 
 import (
+	"diamond/models"
+
 	"github.com/gin-gonic/gin"
 )
 
 // 获取权限列表
-func PermissionList(c *gin.Context) {}
+func PermissionListPerm(c *gin.Context) {
+	perms, total, err := models.GetPermissionList(c)
+	if err != nil {
+		respMsg(c, 1, err.Error())
+		return
+	}
+	respData(c, 0, perms, total)
+}
 
 // 更新权限信息
-func UpdatePermission(c *gin.Context) {}
+func UpdatePermissionPerm(c *gin.Context) {}
 
 // 新建权限
 func CreatePermission(c *gin.Context) {}
