@@ -66,3 +66,38 @@ func authTokenMW() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func checkPermMW() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 管理员跳过
+		if isSuperuser := c.GetBool("is_superuser"); isSuperuser {
+			c.Next()
+			return
+		}
+		// 检查权限
+		user := &models.User{}
+		if result := models.DB.Preload("Roles.Permissions").First(user, c.GetUint("user_id")); result.Error != nil {
+			c.JSON(401, gin.H{
+				"code":    1,
+				"message": result.Error.Error(),
+			})
+			c.Abort()
+			return
+		}
+		for _, role := range user.Roles {
+			if role.IsActive {
+				for _, permission := range role.Permissions {
+					if permission.IsActive && permission.Name == c.HandlerName() {
+						c.Next()
+						return
+					}
+				}
+			}
+		}
+		c.JSON(401, gin.H{
+			"code":    2,
+			"message": "无权限！",
+		})
+		c.Abort()
+	}
+}

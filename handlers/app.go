@@ -27,6 +27,7 @@ func App() *gin.Engine {
 	})
 
 	app.Use(authTokenMW())
+	app.Use(checkPermMW())
 	app.POST("/login", Login)
 	app.POST("/logout", Logout)
 	app.GET("/user_info", UserInfo)
