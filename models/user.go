@@ -25,7 +25,7 @@ type User struct {
 	IsSuperuser   bool         `gorm:"default:false" json:"is_superuser"`
 	LastLoginIP   nulls.String `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
 	LastLoginTime nulls.Time   `json:"last_login_time"`
-	Roles         []*Role      `gorm:"many2many:user_roles"`
+	Roles         []*Role      `gorm:"many2many:user_roles" json:"-"`
 	CreatedAt     time.Time    `json:"created_at"`
 	UpdatedAt     time.Time    `json:"updated_at"`
 }
