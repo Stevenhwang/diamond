@@ -56,6 +56,7 @@ func App() *gin.Engine {
 	app.POST("/groups", CreateGroupPerm)
 	app.PUT("/groups/:id", UpdateGroupPerm)
 	app.DELETE("/groups/:id", DeleteGroupPerm)
+	app.POST("/groups/:id", ServersAssignPerm)
 
 	app.GET("/servers", ServerListPerm)
 	app.POST("/servers", CreateServerPerm)

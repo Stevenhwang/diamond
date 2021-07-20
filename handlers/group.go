@@ -56,3 +56,5 @@ func DeleteGroupPerm(c *gin.Context) {
 	}
 	respMsg(c, 0, "删除成功！")
 }
+
+func ServersAssignPerm(c *gin.Context) {}
