@@ -14,6 +14,7 @@ func authTokenMW() gin.HandlerFunc {
 		// 登录接口跳过
 		if c.Request.URL.Path == "/login" {
 			c.Next()
+			return
 		}
 		// 检查token
 		xToken := c.Request.Header.Get("X-Token")

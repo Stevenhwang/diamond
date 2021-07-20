@@ -22,28 +22,35 @@ func Login(c *gin.Context) {
 	lg := &login{}
 	if err := c.ShouldBindJSON(lg); err != nil {
 		respMsg(c, 1, err.Error())
+		return
 	}
 	if len(lg.Username) == 0 || len(lg.Password) == 0 {
 		respMsg(c, 2, "用户名或密码不能为空！")
+		return
 	}
 	user := &models.User{}
 	if result := models.DB.Where("username = ?", lg.Username).First(user); result.Error != nil {
 		respMsg(c, 3, "用户不存在！")
+		return
 	}
 	// 验证密码
 	if !utils.CheckPassword(user.Password, lg.Password) {
 		respMsg(c, 4, "密码错误！")
+		return
 	}
 	if !user.IsActive {
 		respMsg(c, 5, "账号被禁用！")
+		return
 	}
 	if len(user.GoogleKey.String) > 0 {
 		if len(lg.Otp) == 0 {
 			respMsg(c, 6, "需要二次认证验证码！")
+			return
 		}
 		valid := totp.Validate(lg.Otp, user.GoogleKey.String)
 		if !valid {
 			respMsg(c, 7, "验证码错误！")
+			return
 		}
 	}
 	// 生成token
@@ -56,9 +63,11 @@ func Login(c *gin.Context) {
 	result := models.DB.Model(&user).UpdateColumns(models.User{LastLoginIP: last_login_ip, LastLoginTime: last_login_time})
 	if result.Error != nil {
 		respMsg(c, 8, result.Error.Error())
+		return
 	}
 	c.JSON(200, gin.H{
 		"code":    0,
+		"token":   token,
 		"message": "登录成功！",
 	})
 }
@@ -130,20 +139,25 @@ func ResetPasswd(c *gin.Context) {
 	rpw := &resetPw{}
 	if err := c.ShouldBindJSON(rpw); err != nil {
 		respMsg(c, 1, err.Error())
+		return
 	}
 	if len(rpw.OldPw) == 0 || len(rpw.NewPw1) == 0 || len(rpw.NewPw2) == 0 {
 		respMsg(c, 2, "关键参数不能为空！")
+		return
 	}
 	if rpw.NewPw1 != rpw.NewPw2 {
 		respMsg(c, 3, "两个新密码输入不一致！")
+		return
 	}
 	uid := c.GetUint("user_id")
 	user := &models.User{}
 	if result := models.DB.Find(user, uid); result.Error != nil {
 		respMsg(c, 4, result.Error.Error())
+		return
 	}
 	if !utils.CheckPassword(user.Password, rpw.OldPw) {
 		respMsg(c, 5, "原始密码错误！")
+		return
 	}
 	models.DB.Model(&user).Update("password", rpw.NewPw1)
 	respMsg(c, 0, "修改密码成功！")
@@ -154,6 +168,7 @@ func UserListPerm(c *gin.Context) {
 	users, total, err := models.GetUserList(c)
 	if err != nil {
 		respMsg(c, 1, err.Error())
+		return
 	}
 	respData(c, 0, users, total)
 }
@@ -163,9 +178,11 @@ func UpdateUserPerm(c *gin.Context) {
 	user := &models.User{}
 	if result := models.DB.Find(user, c.Param("id")); result.Error != nil {
 		respMsg(c, 1, result.Error.Error())
+		return
 	}
 	if err := c.ShouldBindJSON(user); err != nil {
 		respMsg(c, 2, err.Error())
+		return
 	}
 	// 处理password和otp_key更新
 	excludeColumns := []string{}
@@ -178,6 +195,7 @@ func UpdateUserPerm(c *gin.Context) {
 	}
 	if result := models.DB.Omit(excludeColumns...).Updates(user); result.Error != nil {
 		respMsg(c, 3, result.Error.Error())
+		return
 	}
 	respMsg(c, 0, "更新成功！")
 }
@@ -187,9 +205,11 @@ func CreateUserPerm(c *gin.Context) {
 	user := &models.User{}
 	if err := c.ShouldBindJSON(user); err != nil {
 		respMsg(c, 1, err.Error())
+		return
 	}
 	if result := models.DB.Create(user); result.Error != nil {
 		respMsg(c, 2, result.Error.Error())
+		return
 	}
 	respMsg(c, 0, "创建成功！")
 }
@@ -199,12 +219,15 @@ func DeleteUserPerm(c *gin.Context) {
 	user := &models.User{}
 	if result := models.DB.Find(user, c.Param("id")); result.Error != nil {
 		respMsg(c, 1, result.Error.Error())
+		return
 	}
 	if user.IsSuperuser {
 		respMsg(c, 2, "超级管理员不可被删除！")
+		return
 	}
 	if result := models.DB.Delete(user); result.Error != nil {
 		respMsg(c, 3, result.Error.Error())
+		return
 	}
 	respMsg(c, 0, "删除成功！")
 }
