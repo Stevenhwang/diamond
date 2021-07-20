@@ -196,7 +196,7 @@ func UpdateUserPerm(c *gin.Context) {
 	if otpKey == 1 {
 		excludeColumns = append(excludeColumns, "google_key")
 	}
-	if result := models.DB.Omit(excludeColumns...).Updates(user); result.Error != nil {
+	if result := models.DB.Select("*").Omit(excludeColumns...).Updates(user); result.Error != nil {
 		respMsg(c, 3, result.Error.Error())
 		return
 	}

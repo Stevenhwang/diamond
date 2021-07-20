@@ -9,10 +9,10 @@ import (
 
 type Menu struct {
 	ID        uint         `json:"id"`
-	Name      string       `gorm:"size:128;unique" json:"name"`
-	Remark    nulls.String `gorm:"size:128" json:"remark"`
+	Name      string       `gorm:"size:128;unique" json:"name" filter:"name" binding:"required"`
+	Remark    nulls.String `gorm:"size:128" json:"remark" filter:"remark"`
 	IsActive  bool         `gorm:"default:true" json:"is_active"`
-	Roles     []*Role      `gorm:"many2many:role_menus"`
+	Roles     []*Role      `gorm:"many2many:role_menus" json:"-"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
 }
