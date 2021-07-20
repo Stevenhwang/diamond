@@ -106,7 +106,13 @@ func UserInfo(c *gin.Context) {
 	user := &models.User{}
 	menusMap := map[string]byte{}
 	if result := models.DB.Preload("Roles.Menus").First(user, uid); result.Error != nil {
-		respMsg(c, 1, result.Error.Error())
+		c.JSON(200, gin.H{
+			"code":         0,
+			"is_superuser": false,
+			"menus":        []string{},
+			"username":     username,
+		})
+		return
 	}
 	for _, role := range user.Roles {
 		if role.IsActive {
@@ -123,7 +129,7 @@ func UserInfo(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"code":         0,
-		"is_superuser": true,
+		"is_superuser": false,
 		"menus":        menus,
 		"username":     username,
 	})
