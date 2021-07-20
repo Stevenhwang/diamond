@@ -11,7 +11,7 @@ type Group struct {
 	Name      string    `gorm:"size:128;unique" json:"name" filter:"name" binding:"required"`
 	IsActive  bool      `gorm:"default:true" json:"is_active"`
 	Roles     []*Role   `gorm:"many2many:role_groups" json:"-"`
-	Servers   []Server  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Servers   []Server  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

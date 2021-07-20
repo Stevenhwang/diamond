@@ -57,4 +57,25 @@ func DeleteGroupPerm(c *gin.Context) {
 	respMsg(c, 0, "删除成功！")
 }
 
-func ServersAssignPerm(c *gin.Context) {}
+func ServersAssignPerm(c *gin.Context) {
+	type serversAssign struct {
+		Servers []int `json:"servers"`
+	}
+	sa := &serversAssign{}
+	if err := c.ShouldBindJSON(sa); err != nil {
+		respMsg(c, 1, err.Error())
+		return
+	}
+	group := &models.Group{}
+	if result := models.DB.Find(group, c.Param("id")); result.Error != nil {
+		respMsg(c, 2, result.Error.Error())
+		return
+	}
+	// 清空原有关联
+	models.DB.Model(group).Association("Servers").Clear()
+	// 添加关联
+	servers := &models.Servers{}
+	models.DB.Find(servers, sa.Servers)
+	models.DB.Model(group).Association("Servers").Append(servers)
+	respMsg(c, 0, "分配成功！")
+}

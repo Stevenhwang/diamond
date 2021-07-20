@@ -10,10 +10,10 @@ type Role struct {
 	ID          uint          `json:"id"`
 	Name        string        `gorm:"size:128;unique" json:"name" filter:"name" binding:"required"`
 	IsActive    bool          `gorm:"default:true" json:"is_active"`
-	Users       []*User       `gorm:"many2many:user_roles"`
-	Permissions []*Permission `gorm:"many2many:role_permissions"`
-	Menus       []*Menu       `gorm:"many2many:role_menus"`
-	Groups      []*Group      `gorm:"many2many:role_groups"`
+	Users       []*User       `gorm:"many2many:user_roles" json:"-"`
+	Permissions []*Permission `gorm:"many2many:role_permissions" json:"-"`
+	Menus       []*Menu       `gorm:"many2many:role_menus" json:"-"`
+	Groups      []*Group      `gorm:"many2many:role_groups" json:"-"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 }

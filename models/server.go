@@ -16,7 +16,7 @@ type Server struct {
 	AuthType  int          `json:"auth_type" binding:"required"` // 1密码验证 2密钥验证
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
-	GroupID   uint         `json:"group_id"`
+	GroupID   nulls.Int    `json:"group_id"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
 }
