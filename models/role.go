@@ -8,7 +8,7 @@ import (
 
 type Role struct {
 	ID          uint          `json:"id"`
-	Name        string        `gorm:"size:128;unique" json:"name"`
+	Name        string        `gorm:"size:128;unique" json:"name" filter:"name" binding:"required"`
 	IsActive    bool          `gorm:"default:true" json:"is_active"`
 	Users       []*User       `gorm:"many2many:user_roles"`
 	Permissions []*Permission `gorm:"many2many:role_permissions"`

@@ -9,16 +9,16 @@ import (
 
 type Server struct {
 	ID        uint         `json:"id"`
-	IP        string       `gorm:"size:128" json:"ip"`
-	Remark    nulls.String `gorm:"size:128" json:"remark"`
-	Port      int          `json:"port"`
-	User      string       `gorm:"size:128" json:"user"`
-	AuthType  int          `json:"auth_type"` // 1密码验证 2密钥验证
+	IP        string       `gorm:"size:128" json:"ip" filter:"ip" binding:"required"`
+	Remark    nulls.String `gorm:"size:128" json:"remark" filter:"remark"`
+	Port      int          `json:"port" binding:"required"`
+	User      string       `gorm:"size:128" json:"user" binding:"required"`
+	AuthType  int          `json:"auth_type" binding:"required"` // 1密码验证 2密钥验证
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
-	GroupID   uint
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	GroupID   uint         `json:"group_id"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
 }
 
 type Servers []Server

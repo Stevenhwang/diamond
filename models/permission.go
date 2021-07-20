@@ -10,7 +10,7 @@ type Permission struct {
 	Name     string       `gorm:"size:128;unique" json:"name"`
 	Remark   nulls.String `gorm:"size:256" json:"remark"`
 	IsActive bool         `gorm:"default:true" json:"is_active"`
-	Roles    []*Role      `gorm:"many2many:role_permissions"`
+	Roles    []*Role      `gorm:"many2many:role_permissions" json:"-"`
 }
 
 type Permissions []Permission
