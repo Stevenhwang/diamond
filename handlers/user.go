@@ -15,8 +15,8 @@ import (
 // 用户登录
 func Login(c *gin.Context) {
 	type login struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
 		Otp      string `json:"otp"`
 	}
 	lg := &login{}
@@ -24,32 +24,28 @@ func Login(c *gin.Context) {
 		respMsg(c, 1, err.Error())
 		return
 	}
-	if len(lg.Username) == 0 || len(lg.Password) == 0 {
-		respMsg(c, 2, "用户名或密码不能为空！")
-		return
-	}
 	user := &models.User{}
 	if result := models.DB.Where("username = ?", lg.Username).First(user); result.Error != nil {
-		respMsg(c, 3, "用户不存在！")
+		respMsg(c, 2, "用户不存在！")
 		return
 	}
 	// 验证密码
 	if !utils.CheckPassword(user.Password, lg.Password) {
-		respMsg(c, 4, "密码错误！")
+		respMsg(c, 3, "密码错误！")
 		return
 	}
 	if !user.IsActive {
-		respMsg(c, 5, "账号被禁用！")
+		respMsg(c, 4, "账号被禁用！")
 		return
 	}
 	if len(user.GoogleKey.String) > 0 {
 		if len(lg.Otp) == 0 {
-			respMsg(c, 6, "需要二次认证验证码！")
+			respMsg(c, 5, "需要二次认证验证码！")
 			return
 		}
 		valid := totp.Validate(lg.Otp, user.GoogleKey.String)
 		if !valid {
-			respMsg(c, 7, "验证码错误！")
+			respMsg(c, 6, "验证码错误！")
 			return
 		}
 	}
@@ -89,6 +85,7 @@ func UserInfo(c *gin.Context) {
 		menus := &models.Menus{}
 		if result := models.DB.Select("name").Find(menus); result.Error != nil {
 			respMsg(c, 1, result.Error.Error())
+			return
 		}
 		menuNames := make([]string, 0, len(*menus))
 		for _, v := range *menus {
