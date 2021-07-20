@@ -4,6 +4,7 @@ import (
 	"diamond/models"
 	"diamond/utils.go"
 	"io/ioutil"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/nulls"
@@ -71,6 +72,11 @@ func checkPermMW() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 管理员跳过
 		if isSuperuser := c.GetBool("is_superuser"); isSuperuser {
+			c.Next()
+			return
+		}
+		// 不需要权限的handler跳过
+		if !strings.HasSuffix(c.HandlerName(), "Perm") {
 			c.Next()
 			return
 		}
