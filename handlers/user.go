@@ -82,19 +82,15 @@ func UserInfo(c *gin.Context) {
 	isSuperuser := c.GetBool("is_superuser")
 	// 管理员
 	if isSuperuser {
-		menus := &models.Menus{}
-		if result := models.DB.Select("name").Find(menus); result.Error != nil {
+		var menus []string
+		if result := models.DB.Model(&models.Menu{}).Pluck("name", &menus); result.Error != nil {
 			respMsg(c, 1, result.Error.Error())
 			return
-		}
-		menuNames := make([]string, 0, len(*menus))
-		for _, v := range *menus {
-			menuNames = append(menuNames, v.Name)
 		}
 		c.JSON(200, gin.H{
 			"code":         0,
 			"is_superuser": true,
-			"menus":        menuNames,
+			"menus":        menus,
 			"username":     username,
 		})
 		return
