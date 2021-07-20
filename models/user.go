@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
 	"strconv"
 	"time"
@@ -9,25 +8,26 @@ import (
 	"diamond/utils.go"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 	"github.com/pquerna/otp/totp"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID            uint
-	Username      string         `gorm:"size:128;unique" filter:"username" json:"username"`
-	Password      string         `gorm:"size:128" json:"password"`
-	Email         sql.NullString `gorm:"size:128" filter:"email" json:"email"`
-	Telephone     sql.NullString `gorm:"size:20" filter:"telephone" json:"telephone"`
-	Department    sql.NullString `gorm:"size:128" filter:"department" json:"department"`
-	GoogleKey     sql.NullString `gorm:"size:256" json:"google_key"`
-	IsActive      bool           `gorm:"default:true" json:"is_active"`
-	IsSuperuser   bool           `gorm:"default:false" json:"is_superuser"`
-	LastLoginIP   sql.NullString `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
-	LastLoginTime sql.NullTime   `json:"last_login_time"`
-	Roles         []*Role        `gorm:"many2many:user_roles"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
+	ID            uint         `json:"id"`
+	Username      string       `gorm:"size:128;unique" filter:"username" json:"username"`
+	Password      string       `gorm:"size:128" json:"password"`
+	Email         nulls.String `gorm:"size:128" filter:"email" json:"email"`
+	Telephone     nulls.String `gorm:"size:20" filter:"telephone" json:"telephone"`
+	Department    nulls.String `gorm:"size:128" filter:"department" json:"department"`
+	GoogleKey     nulls.String `gorm:"size:256" json:"google_key"`
+	IsActive      bool         `gorm:"default:true" json:"is_active"`
+	IsSuperuser   bool         `gorm:"default:false" json:"is_superuser"`
+	LastLoginIP   nulls.String `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
+	LastLoginTime nulls.Time   `json:"last_login_time"`
+	Roles         []*Role      `gorm:"many2many:user_roles"`
+	CreatedAt     time.Time    `json:"created_at"`
+	UpdatedAt     time.Time    `json:"updated_at"`
 }
 
 type Users []User
@@ -47,7 +47,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.Password = pass
 	// generate otp key
 	if u.GoogleKey.String == "seed" {
-		u.GoogleKey = sql.NullString{String: "", Valid: true}
+		u.GoogleKey = nulls.NewString("")
 	} else {
 		var accountName string
 		if len(u.Email.String) > 0 {
@@ -62,7 +62,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
-		u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
+		u.GoogleKey = nulls.NewString(key.Secret())
 	}
 	return nil
 }
@@ -98,9 +98,9 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
-		u.GoogleKey = sql.NullString{String: key.Secret(), Valid: true}
+		u.GoogleKey = nulls.NewString(key.Secret())
 	} else if otpKey == 3 {
-		u.GoogleKey = sql.NullString{String: "", Valid: true}
+		u.GoogleKey = nulls.NewString("")
 	}
 	// 处理is_active更新
 	if !u.IsActive {

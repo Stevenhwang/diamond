@@ -1,22 +1,22 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Log struct {
-	ID        uuid.UUID      `gorm:"type:char(36);primary_key" json:"id"`
-	Username  string         `gorm:"size:128" json:"username"`
-	IP        string         `gorm:"size:128" json:"ip"`
-	Method    string         `gorm:"size:16" json:"method"`
-	URL       string         `gorm:"size:128" json:"url"`
-	Data      sql.NullString `gorm:"type:text" json:"data"`
-	CreatedAt time.Time      `json:"created_at"`
+	ID        uuid.UUID    `gorm:"type:char(36);primary_key" json:"id"`
+	Username  string       `gorm:"size:128" json:"username"`
+	IP        string       `gorm:"size:128" json:"ip"`
+	Method    string       `gorm:"size:16" json:"method"`
+	URL       string       `gorm:"size:128" json:"url"`
+	Data      nulls.String `gorm:"type:text" json:"data"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 type Logs []Log

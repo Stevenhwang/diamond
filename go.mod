@@ -8,6 +8,7 @@ require (
 	github.com/gliderlabs/ssh v0.3.3
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gobuffalo/nulls v0.4.0
 	github.com/google/uuid v1.1.2
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/olekukonko/tablewriter v0.0.5

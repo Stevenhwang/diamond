@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"strconv"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"diamond/utils.go"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -51,8 +51,8 @@ func Login(c *gin.Context) {
 	// 将token写入redis
 	utils.SetToken(user.ID, token)
 	// 更新用户登录IP和登录时间(不触发更新钩子)
-	last_login_ip := sql.NullString{String: c.ClientIP(), Valid: true}
-	last_login_time := sql.NullTime{Time: time.Now(), Valid: true}
+	last_login_ip := nulls.NewString(c.ClientIP())
+	last_login_time := nulls.NewTime(time.Now())
 	result := models.DB.Model(&user).UpdateColumns(models.User{LastLoginIP: last_login_ip, LastLoginTime: last_login_time})
 	if result.Error != nil {
 		respMsg(c, 8, result.Error.Error())
@@ -91,6 +91,7 @@ func UserInfo(c *gin.Context) {
 			"menus":        menuNames,
 			"username":     username,
 		})
+		return
 	}
 	// 普通用户
 	user := &models.User{}

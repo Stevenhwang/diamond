@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"database/sql"
 	"diamond/models"
 	"diamond/utils.go"
 	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 )
 
 func authTokenMW() gin.HandlerFunc {
@@ -56,7 +56,7 @@ func authTokenMW() gin.HandlerFunc {
 			log.URL = cCp.Request.URL.Path
 			b, _ := ioutil.ReadAll(cCp.Request.Body)
 			if len(b) > 0 {
-				log.Data = sql.NullString{String: string(b), Valid: true}
+				log.Data = nulls.NewString(string(b))
 			}
 			go func(log *models.Log) {
 				models.DB.Create(log)

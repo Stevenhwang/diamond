@@ -1,17 +1,16 @@
 package models
 
 import (
-	"database/sql"
-
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/nulls"
 )
 
 type Permission struct {
-	ID       uint           `json:"id"`
-	Name     string         `gorm:"size:128;unique" json:"name"`
-	Remark   sql.NullString `gorm:"size:256" json:"remark"`
-	IsActive bool           `gorm:"default:true" json:"is_active"`
-	Roles    []*Role        `gorm:"many2many:role_permissions"`
+	ID       uint         `json:"id"`
+	Name     string       `gorm:"size:128;unique" json:"name"`
+	Remark   nulls.String `gorm:"size:256" json:"remark"`
+	IsActive bool         `gorm:"default:true" json:"is_active"`
+	Roles    []*Role      `gorm:"many2many:role_permissions"`
 }
 
 type Permissions []Permission
