@@ -43,6 +43,11 @@ func App() *gin.Engine {
 	app.PUT("/menus/:id", UpdateMenuPerm)
 	app.DELETE("/menus/:id", DeleteMenuPerm)
 
+	app.GET("/group", GroupListPerm)
+	app.POST("/group", CreateGroupPerm)
+	app.PUT("/group/:id", UpdateGroupPerm)
+	app.DELETE("/group/:id", DeleteGroupPerm)
+
 	app.GET("/logs", LogListPerm)
 
 	return app
