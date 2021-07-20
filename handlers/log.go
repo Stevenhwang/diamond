@@ -11,6 +11,7 @@ func LogListPerm(c *gin.Context) {
 	logs, total, err := models.GetLogList(c)
 	if err != nil {
 		respMsg(c, 1, err.Error())
+		return
 	}
 	respData(c, 0, logs, total)
 }
