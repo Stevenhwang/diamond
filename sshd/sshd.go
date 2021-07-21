@@ -87,7 +87,7 @@ func sshHandler(s ssh.Session) {
 	terminal.SetPrompt(string(terminal.Escape.Red) + promt + string(terminal.Escape.Reset))
 	var groupInput string
 	for {
-		io.WriteString(s, "请选择服务器分组ID: ")
+		io.WriteString(s, "请选择分组ID: ")
 		line, err := terminal.ReadLine()
 		if err == io.EOF {
 			log.Println(err)
@@ -161,6 +161,41 @@ func sshHandler(s ssh.Session) {
 		serverTable.Append([]string{strconv.Itoa(int(k)), v.IP, v.Remark.String, v.User, strconv.Itoa(v.Port)})
 	}
 	serverTable.Render()
+	var serverInput string
+	for {
+		io.WriteString(s, "请选择服务器ID: ")
+		line, err := terminal.ReadLine()
+		if err == io.EOF {
+			log.Println(err)
+			s.Exit(1)
+			return
+		}
+		if err != nil {
+			log.Println(err)
+			s.Exit(1)
+			return
+		}
+		if line == "" {
+			log.Println("empty")
+			groupTable.Render()
+			continue
+		}
+		if len(line) > 0 {
+			serverInput = line
+			break
+		}
+	}
+	serverID, err := strconv.Atoi(serverInput)
+	if err != nil {
+		io.WriteString(s, err.Error())
+		s.Exit(1)
+	}
+	if server, ok := serverMap[uint(serverID)]; !ok {
+		io.WriteString(s, "服务器不存在！\n")
+		s.Exit(1)
+	} else {
+		log.Printf("连接%d...", server.ID)
+	}
 	// // 连接远程服务器
 	// _, winCh, isPty := s.Pty()
 	// if isPty {
