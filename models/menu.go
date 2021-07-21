@@ -21,6 +21,14 @@ type Menus []Menu
 
 func GetMenuList(c *gin.Context) (menus Menus, total int64, err error) {
 	menus = Menus{}
+	// 使用role_id查找的时候不用分页，也不用filter
+	if roleID := c.Query("role_id"); len(roleID) > 0 {
+		role := &Role{}
+		DB.First(role, roleID)
+		total = DB.Model(role).Association("Menus").Count()
+		err := DB.Model(role).Association("Menus").Find(menus)
+		return menus, total, err
+	}
 	DB.Model(&Menu{}).Scopes(Filter(Menu{}, c)).Count(&total)
 	result := DB.Scopes(Filter(Menu{}, c), Paginate(c)).Find(&menus)
 	return menus, total, result.Error
