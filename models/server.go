@@ -25,13 +25,13 @@ type Servers []Server
 
 func GetServerList(c *gin.Context) (servers Servers, total int64, err error) {
 	servers = Servers{}
-	baseQuery := DB.Model(&Server{}).Scopes(Filter(Server{}, c))
+	// 使用group_id查找的时候不用分页，也不用filter
 	if groupID := c.Query("group_id"); len(groupID) > 0 {
-		baseQuery.Where("group_id = ?", groupID).Count(&total)
-		result := baseQuery.Scopes(Paginate(c)).Where("group_id = ?", groupID).Find(&servers)
+		DB.Model(&Server{}).Where("group_id = ?", groupID).Count(&total)
+		result := DB.Model(&Server{}).Where("group_id = ?", groupID).Find(&servers)
 		return servers, total, result.Error
 	}
-	baseQuery.Count(&total)
-	result := baseQuery.Scopes(Paginate(c)).Find(&servers)
+	DB.Model(&Server{}).Scopes(Filter(Server{}, c)).Count(&total)
+	result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Find(&servers)
 	return servers, total, result.Error
 }

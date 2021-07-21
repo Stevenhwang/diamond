@@ -119,7 +119,7 @@ func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 
 func GetUserList(c *gin.Context) (users Users, total int64, err error) {
 	users = Users{}
-	// 使用role_id查找的时候不用分页
+	// 使用role_id查找的时候不用分页，也不用filter
 	if roleID := c.Query("role_id"); len(roleID) > 0 {
 		role := &Role{}
 		DB.First(role, roleID)
