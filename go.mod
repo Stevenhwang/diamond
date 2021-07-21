@@ -10,7 +10,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gobuffalo/nulls v0.4.0
 	github.com/google/uuid v1.1.2
-	github.com/jmoiron/sqlx v1.3.4
+	github.com/jmoiron/sqlx v1.3.4 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pquerna/otp v1.3.0
 	github.com/spf13/cobra v1.2.1
