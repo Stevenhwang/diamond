@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var webCmd = &cobra.Command{
-	Use:   "web",
-	Short: "start web api server[开启 web api 服务器]",
+var apiCmd = &cobra.Command{
+	Use:   "api",
+	Short: "start api server[开启 api 服务器]",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		app := handlers.App()
@@ -19,5 +19,5 @@ var webCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(webCmd)
+	RootCmd.AddCommand(apiCmd)
 }
