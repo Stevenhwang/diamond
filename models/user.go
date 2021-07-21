@@ -119,6 +119,14 @@ func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 
 func GetUserList(c *gin.Context) (users Users, total int64, err error) {
 	users = Users{}
+	// 使用role_id查找的时候不用分页
+	if roleID := c.Query("role_id"); len(roleID) > 0 {
+		role := &Role{}
+		DB.First(role, roleID)
+		total = DB.Model(role).Association("Users").Count()
+		err := DB.Model(role).Omit("password").Association("Users").Find(users)
+		return users, total, err
+	}
 	DB.Model(&User{}).Scopes(Filter(User{}, c)).Count(&total)
 	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Omit("password").Find(&users)
 	return users, total, result.Error
