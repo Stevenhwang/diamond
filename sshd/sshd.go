@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"diamond/config"
+	"diamond/models"
 	"diamond/utils.go"
 
 	"github.com/gliderlabs/ssh"
@@ -33,7 +34,18 @@ type Server struct {
 }
 
 func passwordHandler(ctx ssh.Context, password string) bool {
-	return password == "secret"
+	// return password == "secret"
+	user := &models.User{}
+	if result := models.DB.Where("username = ?", ctx.User()).First(user); result.Error != nil {
+		return false
+	}
+	if !utils.CheckPassword(user.Password, password) {
+		return false
+	}
+	if !user.IsActive {
+		return false
+	}
+	return true
 }
 
 func sshHandler(s ssh.Session) {
