@@ -75,7 +75,9 @@ func sshHandler(s ssh.Session) {
 			}
 		}
 	}
+	gIDList := []int{}
 	for k, v := range groupMap {
+		gIDList = append(gIDList, int(k))
 		groupTable.Append([]string{strconv.Itoa(int(k)), v})
 	}
 	groupTable.Render()
@@ -112,17 +114,53 @@ func sshHandler(s ssh.Session) {
 		io.WriteString(s, err.Error())
 		s.Exit(1)
 	}
+	serverMap := map[uint]models.Server{}
 	if groupID == 0 {
 		log.Println("展示所有服务器")
+		if user.IsSuperuser {
+			servers := &models.Servers{}
+			models.DB.Find(servers)
+			for _, s := range *servers {
+				serverMap[s.ID] = s
+			}
+		} else {
+			groups := &models.Groups{}
+			models.DB.Preload("Servers").Find(groups, gIDList)
+			for _, g := range *groups {
+				for _, server := range g.Servers {
+					if server.IsActive {
+						serverMap[server.ID] = server
+					}
+				}
+			}
+		}
 	} else {
 		if _, ok := groupMap[uint(groupID)]; ok {
 			log.Println("展示选择的组里的服务器")
+			group := &models.Group{}
+			models.DB.Find(group, groupID)
+			if user.IsSuperuser {
+				for _, s := range group.Servers {
+					serverMap[s.ID] = s
+				}
+			} else {
+				for _, s := range group.Servers {
+					if s.IsActive {
+						serverMap[s.ID] = s
+					}
+				}
+			}
 		} else {
 			io.WriteString(s, "分组不存在！\n")
 			s.Exit(1)
 		}
 	}
-
+	serverTable := tablewriter.NewWriter(s)
+	serverTable.SetHeader([]string{"id", "ip", "remark", "user", "port"})
+	for k, v := range serverMap {
+		serverTable.Append([]string{strconv.Itoa(int(k)), v.IP, v.Remark.String, v.User, strconv.Itoa(v.Port)})
+	}
+	serverTable.Render()
 	// // 连接远程服务器
 	// _, winCh, isPty := s.Pty()
 	// if isPty {
