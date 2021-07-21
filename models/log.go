@@ -11,11 +11,11 @@ import (
 
 type Log struct {
 	ID        uuid.UUID    `gorm:"type:char(36);primary_key" json:"id"`
-	Username  string       `gorm:"size:128" json:"username"`
-	IP        string       `gorm:"size:128" json:"ip"`
-	Method    string       `gorm:"size:16" json:"method"`
-	URL       string       `gorm:"size:128" json:"url"`
-	Data      nulls.String `gorm:"type:text" json:"data"`
+	Username  string       `gorm:"size:128" json:"username" filter:"username"`
+	IP        string       `gorm:"size:128" json:"ip" filter:"ip"`
+	Method    string       `gorm:"size:16" json:"method" filter:"method"`
+	URL       string       `gorm:"size:128" json:"url" filter:"url"`
+	Data      nulls.String `gorm:"type:text" json:"data" filter:"data"`
 	CreatedAt time.Time    `json:"created_at"`
 }
 
