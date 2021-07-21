@@ -76,6 +76,44 @@ var syncPermCmd = &cobra.Command{
 	},
 }
 
+var docCmd = &cobra.Command{
+	Use:   "doc",
+	Short: "Sync perm docs only[仅更新权限文档]",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		// doc文档
+		docs := make(map[string]string)
+		fset := token.NewFileSet() // positions are relative to fset
+		d, err := parser.ParseDir(fset, "./handlers", nil, parser.ParseComments)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		for _, f := range d {
+			p := doc.New(f, "./", 2)
+			// 获取所有func doc
+			for _, f := range p.Funcs {
+				if strings.HasSuffix(f.Name, "Perm") {
+					funcName := fmt.Sprintf("diamond/handlers.%v", f.Name)
+					docs[funcName] = f.Doc
+				}
+			}
+		}
+		// 已有权限
+		existPerms := &models.Permissions{}
+		if result := models.DB.Find(existPerms); result.Error != nil {
+			log.Fatalln(result.Error)
+		}
+		for _, p := range *existPerms {
+			if v, ok := docs[p.Name]; ok {
+				p.Remark = v
+				models.DB.Save(p)
+			}
+		}
+		log.Println("Update permission docs successfully!")
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(syncPermCmd)
+	syncPermCmd.AddCommand(docCmd)
 }
