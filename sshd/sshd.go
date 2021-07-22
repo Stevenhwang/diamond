@@ -138,7 +138,7 @@ func sshHandler(s ssh.Session) {
 		if _, ok := groupMap[uint(groupID)]; ok {
 			log.Println("展示选择的组里的服务器")
 			group := &models.Group{}
-			models.DB.Find(group, groupID)
+			models.DB.Preload("Servers").Find(group, groupID)
 			if user.IsSuperuser {
 				for _, s := range group.Servers {
 					serverMap[s.ID] = s
@@ -177,7 +177,7 @@ func sshHandler(s ssh.Session) {
 		}
 		if line == "" {
 			log.Println("empty")
-			groupTable.Render()
+			serverTable.Render()
 			continue
 		}
 		if len(line) > 0 {

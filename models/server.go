@@ -13,7 +13,6 @@ type Server struct {
 	Remark    nulls.String `gorm:"size:128" json:"remark" filter:"remark"`
 	Port      int          `json:"port" binding:"required"`
 	User      string       `gorm:"size:128" json:"user" binding:"required"`
-	AuthType  int          `json:"auth_type" binding:"required"` // 1密码验证 2密钥验证
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
 	GroupID   nulls.Int    `json:"group_id"`
