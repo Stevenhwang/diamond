@@ -194,83 +194,87 @@ func sshHandler(s ssh.Session) {
 		io.WriteString(s, "服务器不存在！\n")
 		s.Exit(1)
 	} else {
-		log.Printf("连接%d...", server.ID)
+		log.Printf("连接服务器%d...", server.ID)
+		// 连接远程服务器
+		_, winCh, isPty := s.Pty()
+		if isPty {
+			client, err := utils.GetSSHClient(server.IP, server.Port, server.User, server.Password.String, server.Key.String)
+			if err != nil {
+				log.Println(err)
+				io.WriteString(s, fmt.Sprintf("连接服务器失败: %v", err))
+				s.Exit(1)
+			}
+			defer client.Close()
+			//创建ssh session
+			session, err := client.NewSession()
+			if err != nil {
+				log.Printf("create session failed: %v", err)
+				io.WriteString(s, fmt.Sprintf("创建session失败: %v", err))
+				s.Exit(1)
+			}
+			defer session.Close()
+			// Set up terminal modes
+			modes := gossh.TerminalModes{
+				gossh.ECHO:          1,     // disable echoing
+				gossh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+				gossh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+			}
+			// Request pseudo terminal
+			if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+				log.Printf("request for pseudo terminal failed: %v", err)
+				io.WriteString(s, fmt.Sprintf("request for pseudo terminal failed: %v", err))
+				s.Exit(1)
+			}
+			session.Stdin = s
+			// session.Stdout = s
+			session.Stderr = s
+			// 捕捉输出，输出有回显，可用来记录终端输入输出
+			out, _ := session.StdoutPipe()
+			go func() {
+				for {
+					var buffer [1024]byte
+					n, err := out.Read(buffer[:])
+					if err != nil {
+						fmt.Println("out error:", err)
+						break
+					}
+					fmt.Println(string(buffer[:n]))
+					s.Write(buffer[:n])
+				}
+			}()
+			// Start remote shell
+			if err := session.Shell(); err != nil {
+				log.Printf("failed to start shell: %v", err)
+				io.WriteString(s, fmt.Sprintf("failed to start shell: %v", err))
+				s.Exit(1)
+			}
+			// 监听window change
+			go func() {
+				for win := range winCh {
+					log.Printf("change window: %d %d", win.Height, win.Width)
+					session.WindowChange(win.Height, win.Width)
+				}
+			}()
+			// 监听超时, 关闭session
+			go func() {
+				for {
+					select {
+					case <-time.After(time.Second):
+						continue
+					case <-s.Context().Done():
+						log.Println("connection closed")
+						session.Close()
+						s.Exit(1)
+						return
+					}
+				}
+			}()
+			session.Wait()
+		} else {
+			io.WriteString(s, "No PTY requested.\n")
+			s.Exit(1)
+		}
 	}
-	// // 连接远程服务器
-	// _, winCh, isPty := s.Pty()
-	// if isPty {
-	// 	client, err := utils.GetSSHClient("192.168.241.130", 22, "root", "12345678")
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		s.Exit(1)
-	// 	}
-	// 	defer client.Close()
-	// 	//创建ssh session
-	// 	session, err := client.NewSession()
-	// 	if err != nil {
-	// 		log.Printf("create session failed: %v", err)
-	// 		s.Exit(1)
-	// 	}
-	// 	defer session.Close()
-	// 	// Set up terminal modes
-	// 	modes := gossh.TerminalModes{
-	// 		gossh.ECHO:          1,     // disable echoing
-	// 		gossh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-	// 		gossh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
-	// 	}
-	// 	// Request pseudo terminal
-	// 	if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
-	// 		log.Printf("request for pseudo terminal failed: %v", err)
-	// 		s.Exit(1)
-	// 	}
-	// 	session.Stdin = s
-	// 	// session.Stdout = s
-	// 	session.Stderr = s
-	// 	// 捕捉输出，输出有回显，可用来记录终端输入输出
-	// 	out, _ := session.StdoutPipe()
-	// 	go func() {
-	// 		for {
-	// 			var buffer [1024]byte
-	// 			n, err := out.Read(buffer[:])
-	// 			if err != nil {
-	// 				fmt.Println("out error:", err)
-	// 				break
-	// 			}
-	// 			fmt.Println(string(buffer[:n]))
-	// 			s.Write(buffer[:n])
-	// 		}
-	// 	}()
-	// 	// Start remote shell
-	// 	if err := session.Shell(); err != nil {
-	// 		log.Printf("failed to start shell: %v", err)
-	// 		s.Exit(1)
-	// 	}
-	// 	// window change
-	// 	go func() {
-	// 		for win := range winCh {
-	// 			log.Printf("change window: %d %d", win.Height, win.Width)
-	// 			session.WindowChange(win.Height, win.Width)
-	// 		}
-	// 	}()
-	// 	// 监听超时, 关闭session
-	// 	go func() {
-	// 		for {
-	// 			select {
-	// 			case <-time.After(time.Second):
-	// 				continue
-	// 			case <-s.Context().Done():
-	// 				log.Println("connection closed")
-	// 				session.Close()
-	// 				s.Exit(1)
-	// 				return
-	// 			}
-	// 		}
-	// 	}()
-	// 	session.Wait()
-	// } else {
-	// 	io.WriteString(s, "No PTY requested.\n")
-	// 	s.Exit(1)
-	// }
 }
 
 func Start() {
