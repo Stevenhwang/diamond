@@ -23,12 +23,11 @@ func GetGroupList(c *gin.Context) (groups Groups, total int64, err error) {
 	uid := c.GetUint("user_id")
 	isSuperuser := c.GetBool("is_superuser")
 	if isSuperuser {
-		// 使用role_id查找的时候不用分页，也不用filter，用于管理员分配资源
 		if roleID := c.Query("role_id"); len(roleID) > 0 {
 			role := &Role{}
 			DB.First(role, roleID)
-			total = DB.Model(role).Association("Groups").Count()
-			err := DB.Model(role).Association("Groups").Find(groups)
+			total = DB.Model(role).Scopes(Filter(Group{}, c)).Association("Groups").Count()
+			err := DB.Model(role).Scopes(Filter(Group{}, c), Paginate(c)).Association("Groups").Find(groups)
 			return groups, total, err
 		}
 		DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Count(&total)
