@@ -18,7 +18,7 @@ var seedCmd = &cobra.Command{
 		if result.Error != nil {
 			log.Println(result.Error)
 		} else {
-			log.Println("Initialize database success")
+			log.Println("Initialize database success[管理员=>admin:12345678]")
 		}
 	},
 }
