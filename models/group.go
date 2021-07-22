@@ -20,15 +20,38 @@ type Groups []Group
 
 func GetGroupList(c *gin.Context) (groups Groups, total int64, err error) {
 	groups = Groups{}
-	// 使用role_id查找的时候不用分页，也不用filter
-	if roleID := c.Query("role_id"); len(roleID) > 0 {
-		role := &Role{}
-		DB.First(role, roleID)
-		total = DB.Model(role).Association("Groups").Count()
-		err := DB.Model(role).Association("Groups").Find(groups)
-		return groups, total, err
+	uid := c.GetUint("user_id")
+	isSuperuser := c.GetBool("is_superuser")
+	if isSuperuser {
+		// 使用role_id查找的时候不用分页，也不用filter，用于管理员分配资源
+		if roleID := c.Query("role_id"); len(roleID) > 0 {
+			role := &Role{}
+			DB.First(role, roleID)
+			total = DB.Model(role).Association("Groups").Count()
+			err := DB.Model(role).Association("Groups").Find(groups)
+			return groups, total, err
+		}
+		DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Count(&total)
+		result := DB.Scopes(Filter(Group{}, c), Paginate(c)).Find(&groups)
+		return groups, total, result.Error
 	}
-	DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Count(&total)
-	result := DB.Scopes(Filter(Group{}, c), Paginate(c)).Find(&groups)
+	user := &User{}
+	groupMap := map[uint]string{}
+	DB.Preload("Roles.Groups").First(user, uid)
+	for _, role := range user.Roles {
+		if role.IsActive {
+			for _, group := range role.Groups {
+				if group.IsActive {
+					groupMap[group.ID] = group.Name
+				}
+			}
+		}
+	}
+	gIDList := []int{}
+	for k := range groupMap {
+		gIDList = append(gIDList, int(k))
+	}
+	DB.Model(&Group{}).Scopes(Filter(Group{}, c)).Where("id IN ?", gIDList).Count(&total)
+	result := DB.Scopes(Filter(Group{}, c), Paginate(c)).Find(&groups, gIDList)
 	return groups, total, result.Error
 }
