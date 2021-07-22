@@ -28,14 +28,14 @@ func GetServerList(c *gin.Context) (servers Servers, total int64, err error) {
 	uid := c.GetUint("user_id")
 	isSuperuser := c.GetBool("is_superuser")
 	if isSuperuser {
-		// 使用group_id查找的时候不用分页，也不用filter，用于管理员分配资源
+		baseQuery := DB.Model(&Server{}).Scopes(Filter(Server{}, c))
 		if groupID := c.Query("group_id"); len(groupID) > 0 {
-			DB.Model(&Server{}).Where("group_id = ?", groupID).Count(&total)
-			result := DB.Model(&Server{}).Where("group_id = ?", groupID).Find(&servers)
+			baseQuery.Where("group_id = ?", groupID).Count(&total)
+			result := baseQuery.Scopes(Paginate(c)).Where("group_id = ?", groupID).Find(&servers)
 			return servers, total, result.Error
 		}
-		DB.Model(&Server{}).Scopes(Filter(Server{}, c)).Count(&total)
-		result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Find(&servers)
+		baseQuery.Count(&total)
+		result := baseQuery.Scopes(Paginate(c)).Find(&servers)
 		return servers, total, result.Error
 	}
 	user := &User{}
