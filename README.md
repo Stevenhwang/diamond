@@ -1,9 +1,9 @@
 ## Require
 
 ```bash
-golang1.16+
-mysql5.7+
-redis3.2+
+golang 1.16+
+mysql 5.7+
+redis 3.2+
 ```
 
 ## Installation
