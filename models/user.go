@@ -17,7 +17,7 @@ type User struct {
 	ID            uint         `json:"id"`
 	Username      string       `gorm:"size:128;unique" filter:"username" json:"username" binding:"required"`
 	Password      string       `gorm:"size:128" json:"password"`
-	Email         nulls.String `gorm:"size:128" filter:"email" json:"email"`
+	Email         nulls.String `gorm:"size:128" filter:"email" json:"email" binding:"omitempty,email"`
 	Telephone     nulls.String `gorm:"size:20" filter:"telephone" json:"telephone"`
 	Department    nulls.String `gorm:"size:128" filter:"department" json:"department"`
 	GoogleKey     nulls.String `gorm:"size:256" json:"google_key"`
