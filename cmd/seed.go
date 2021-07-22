@@ -10,7 +10,7 @@ import (
 
 var seedCmd = &cobra.Command{
 	Use:   "seed",
-	Short: "Initialize the database[创建admin账户]",
+	Short: "seed the database[创建admin账户]",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		user := models.User{Username: "admin", GoogleKey: nulls.NewString("seed"), IsSuperuser: true}
@@ -18,7 +18,7 @@ var seedCmd = &cobra.Command{
 		if result.Error != nil {
 			log.Println(result.Error)
 		} else {
-			log.Println("Initialize database success[管理员=>admin:12345678]")
+			log.Println("seed database success[管理员=>admin:12345678]")
 		}
 	},
 }
