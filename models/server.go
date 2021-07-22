@@ -11,7 +11,7 @@ type Server struct {
 	ID        uint         `json:"id"`
 	IP        string       `gorm:"size:128" json:"ip" filter:"ip" binding:"required,ipv4"`
 	Remark    nulls.String `gorm:"size:256" json:"remark" filter:"remark"`
-	Port      int          `json:"port" binding:"required"`
+	Port      int          `gorm:"default:22" json:"port" binding:"required"`
 	User      string       `gorm:"size:128" json:"user" binding:"required"`
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
