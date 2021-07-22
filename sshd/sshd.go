@@ -13,7 +13,6 @@ import (
 	"diamond/utils.go"
 
 	"github.com/gliderlabs/ssh"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/olekukonko/tablewriter"
 	gossh "golang.org/x/crypto/ssh"
 	"golang.org/x/term"
