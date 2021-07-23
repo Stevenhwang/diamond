@@ -12,6 +12,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.4 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pquerna/otp v1.3.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97

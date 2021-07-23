@@ -60,3 +60,4 @@ Available Commands:
 - [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter)
 - [pquerna/otp](https://github.com/pquerna/otp)
 - [golang.org/x/term](https://golang.org/x/term)
+- [robfig/cron](https://github.com/robfig/cron)

@@ -13,7 +13,7 @@
         "dbName": 6,
         "poolSize": 25
     },
-    "web": {
+    "api": {
         "addr": ":3000"
     },
     "jwt": {
