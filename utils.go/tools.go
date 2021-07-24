@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"math/rand"
+	"os"
 	"reflect"
 	"runtime"
 	"time"
@@ -74,4 +75,12 @@ func RemoveDupInSlice(slice []string) []string {
 		}
 	}
 	return result
+}
+
+// PathExists 判断所给路径文件/文件夹是否存在
+func PathExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

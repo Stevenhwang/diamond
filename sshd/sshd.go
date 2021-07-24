@@ -1,10 +1,12 @@
 package sshd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -227,9 +229,38 @@ func sshHandler(s ssh.Session) {
 			session.Stdin = s
 			// session.Stdout = s
 			session.Stderr = s
+
+			// 开始记录终端录屏
+			now := time.Now()
+			time_str := now.Format("2006-01-02-15-04-05")
+			record_dir := "./record/"
+			if !utils.PathExists(record_dir) {
+				os.Mkdir(record_dir, 0755)
+			}
+			record_file := fmt.Sprintf("%s%s-%d-%s.cast", record_dir, s.User(), server.ID, time_str)
+			record := models.Record{User: s.User(), ServerID: server.ID, File: record_file}
+			models.DB.Create(&record)
 			// 捕捉输出，输出有回显，可用来记录终端输入输出
 			out, _ := session.StdoutPipe()
 			go func() {
+				f, _ := os.OpenFile(record_file, os.O_APPEND, 0644)
+				defer f.Close()
+				// 记录文件头
+				timestamp := float64(now.UnixNano() / 1e9)
+				env := map[string]string{
+					"SHELL": "/bin/bash",
+					"TERM":  "xterm",
+				}
+				header := map[string]interface{}{
+					"version":   2,
+					"width":     80,
+					"height":    40,
+					"timestamp": fmt.Sprintf("%v", timestamp),
+					"env":       env,
+				}
+				headerbyte, _ := json.Marshal(header)
+				f.WriteString(string(headerbyte) + "\n")
+				// 记录终端内容
 				for {
 					var buffer [1024]byte
 					n, err := out.Read(buffer[:])
@@ -237,7 +268,11 @@ func sshHandler(s ssh.Session) {
 						fmt.Println("out error:", err)
 						break
 					}
-					fmt.Println(string(buffer[:n]))
+					nt := float64(time.Now().UnixNano() / 1e9)
+					iodata := []string{fmt.Sprintf("%v", nt-timestamp), "o", string(buffer[:n])}
+					iodatabyte, _ := json.Marshal(iodata)
+					f.WriteString(string(iodatabyte) + "\n")
+					// fmt.Println(string(buffer[:n]))
 					s.Write(buffer[:n])
 				}
 			}()
