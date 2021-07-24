@@ -17,6 +17,7 @@ type Server struct {
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
 	GroupID   nulls.Int    `json:"group_id"`
+	Records   Records      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
 	IsActive  bool         `gorm:"default:true" json:"is_active"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
