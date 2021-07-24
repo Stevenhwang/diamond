@@ -157,9 +157,9 @@ func sshHandler(s ssh.Session) {
 		}
 	}
 	serverTable := tablewriter.NewWriter(s)
-	serverTable.SetHeader([]string{"id", "ip", "remark", "user", "port"})
+	serverTable.SetHeader([]string{"id", "ip", "hostname", "remark"})
 	for k, v := range serverMap {
-		serverTable.Append([]string{strconv.Itoa(int(k)), v.IP, v.Remark.String, v.User, strconv.Itoa(v.Port)})
+		serverTable.Append([]string{strconv.Itoa(int(k)), v.IP, v.Hostname.String, v.Remark.String})
 	}
 	serverTable.Render()
 	var serverInput string
