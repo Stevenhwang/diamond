@@ -10,6 +10,7 @@ import (
 type Server struct {
 	ID        uint         `json:"id"`
 	IP        string       `gorm:"size:128" json:"ip" filter:"ip" binding:"required,ipv4"`
+	Hostname  nulls.String `gorm:"size:128" json:"hostname" filter:"ip"`
 	Remark    nulls.String `gorm:"size:256" json:"remark" filter:"remark"`
 	Port      int          `gorm:"default:22" json:"port" binding:"required"`
 	User      string       `gorm:"size:128" json:"user" binding:"required"`
