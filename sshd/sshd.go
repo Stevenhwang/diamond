@@ -200,7 +200,7 @@ func sshHandler(s ssh.Session) {
 		// 连接远程服务器
 		_, winCh, isPty := s.Pty()
 		if isPty {
-			client, err := utils.GetSSHClient(server.IP, server.Port, server.User, server.Password.String, server.Key.String)
+			client, err := utils.GetSSHClient(server.IP, server.Port, server.User, server.AuthType, server.Password.String, server.Key.String)
 			if err != nil {
 				log.Println(err)
 				io.WriteString(s, fmt.Sprintf("连接服务器失败: %v", err))

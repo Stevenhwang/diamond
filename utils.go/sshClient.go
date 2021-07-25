@@ -1,25 +1,29 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	gossh "golang.org/x/crypto/ssh"
 )
 
-func GetSSHClient(host string, port int, user string, password string, key string) (*gossh.Client, error) {
-	// 先尝试用password验证
-	config := &gossh.ClientConfig{
-		Timeout:         5 * time.Second,
-		User:            user,
-		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
-		Auth:            []gossh.AuthMethod{gossh.Password(password)},
+func GetSSHClient(host string, port int, user string, authType int, password string, key string) (*gossh.Client, error) {
+	if authType != 1 && authType != 2 {
+		return nil, errors.New("auth type is only 1 or 2")
 	}
+	var client *gossh.Client
+	var errs error
 	addr := fmt.Sprintf("%s:%d", host, port)
-	client, err := gossh.Dial("tcp", addr, config)
-	// 如果验证不成功，再用key验证
-	if err != nil {
-		// Create the Signer for this private key.
+	if authType == 1 {
+		config := &gossh.ClientConfig{
+			Timeout:         5 * time.Second,
+			User:            user,
+			HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+			Auth:            []gossh.AuthMethod{gossh.Password(password)},
+		}
+		client, errs = gossh.Dial("tcp", addr, config)
+	} else {
 		signer, err := gossh.ParsePrivateKey([]byte(key))
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse private key: %v", err)
@@ -30,10 +34,10 @@ func GetSSHClient(host string, port int, user string, password string, key strin
 			HostKeyCallback: gossh.InsecureIgnoreHostKey(),
 			Auth:            []gossh.AuthMethod{gossh.PublicKeys(signer)},
 		}
-		client, err = gossh.Dial("tcp", addr, keyConfig)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get client: %v", err)
-		}
+		client, errs = gossh.Dial("tcp", addr, keyConfig)
+	}
+	if errs != nil {
+		return nil, errs
 	}
 	return client, nil
 }
