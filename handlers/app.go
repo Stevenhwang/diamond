@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"diamond/config"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,10 @@ import (
 )
 
 func App() *gin.Engine {
+	debug := config.Config.Get("api.debug").(bool)
+	if !debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	app := gin.New()
 	app.Use(gin.Logger())
 	app.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
