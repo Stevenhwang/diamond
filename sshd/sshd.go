@@ -58,6 +58,7 @@ func sshHandler(s ssh.Session) {
 	models.DB.Preload("Roles.Groups").Where("username = ?", s.User()).First(user)
 	groupTable := tablewriter.NewWriter(s)
 	groupTable.SetHeader([]string{"id", "name"})
+	groupTable.Append([]string{"0", "ALL(所有服务器)"})
 	groupMap := map[uint]string{}
 	if user.IsSuperuser {
 		groups := &models.Groups{}
