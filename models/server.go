@@ -1,10 +1,12 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/nulls"
+	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -14,6 +16,7 @@ type Server struct {
 	Remark    nulls.String `gorm:"size:256" json:"remark" filter:"remark"`
 	Port      int          `gorm:"default:22" json:"port" binding:"required"`
 	User      string       `gorm:"size:128" json:"user" binding:"required"`
+	AuthType  int          `json:"auth_type" binding:"required"` // 认证方式：1.password/2.key
 	Password  nulls.String `gorm:"size:128" json:"password"`
 	Key       nulls.String `gorm:"type:text" json:"key"`
 	GroupID   nulls.Int    `json:"group_id"`
@@ -24,6 +27,22 @@ type Server struct {
 }
 
 type Servers []Server
+
+func (s *Server) BeforeCreate(tx *gorm.DB) (err error) {
+	if s.AuthType != 1 && s.AuthType != 2 {
+		return errors.New("auth type is only 1 or 2")
+	}
+	if s.AuthType == 1 {
+		if len(s.Password.String) == 0 {
+			return errors.New("need password")
+		}
+	} else {
+		if len(s.Key.String) == 0 {
+			return errors.New("need key")
+		}
+	}
+	return nil
+}
 
 func GetServerList(c *gin.Context) (servers Servers, total int64, err error) {
 	servers = Servers{}
