@@ -14,7 +14,9 @@ var migrateCmd = &cobra.Command{
 	    出于保护您数据的目的，它不会删除未使用的列`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		models.DB.AutoMigrate(&models.User{}, &models.Server{}, &models.Role{}, &models.Permission{}, &models.Menu{}, &models.Log{}, &models.Group{})
+		models.DB.AutoMigrate(&models.User{}, &models.Server{}, &models.Role{},
+			&models.Permission{}, &models.Menu{}, &models.Log{},
+			&models.Group{}, &models.Record{})
 	},
 }
 
