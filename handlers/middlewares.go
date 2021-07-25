@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"diamond/models"
 	"diamond/utils.go"
 	"io/ioutil"
@@ -49,14 +50,15 @@ func authTokenMW() gin.HandlerFunc {
 		c.Set("username", username)
 		c.Set("is_superuser", isSuperuser)
 		// 记录访问日志(除get请求)
-		cCp := c.Copy()
 		if c.Request.Method != "GET" {
 			log := &models.Log{}
 			log.Username = username
-			log.IP = cCp.ClientIP()
-			log.Method = cCp.Request.Method
-			log.URL = cCp.Request.URL.Path
-			b, _ := ioutil.ReadAll(cCp.Request.Body)
+			log.IP = c.ClientIP()
+			log.Method = c.Request.Method
+			log.URL = c.Request.URL.Path
+			b, _ := ioutil.ReadAll(c.Request.Body)
+			// 复制一份body
+			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 			if len(b) > 0 {
 				log.Data = nulls.NewString(string(b))
 			}
