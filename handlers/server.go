@@ -27,10 +27,19 @@ func UpdateServerPerm(c *gin.Context) {
 		respMsg(c, 2, err.Error())
 		return
 	}
-	if result := models.DB.Select("*").Updates(server); result.Error != nil {
+	// 处理password和key更新
+	excludeColumns := []string{}
+	if len(server.Password.String) == 0 {
+		excludeColumns = append(excludeColumns, "password")
+	}
+	if len(server.Key.String) == 0 {
+		excludeColumns = append(excludeColumns, "key")
+	}
+	if result := models.DB.Select("*").Omit(excludeColumns...).Updates(server); result.Error != nil {
 		respMsg(c, 3, result.Error.Error())
 		return
 	}
+	respMsg(c, 0, "更新成功！")
 }
 
 // 新建服务器

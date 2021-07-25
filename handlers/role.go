@@ -31,6 +31,7 @@ func UpdateRolePerm(c *gin.Context) {
 		respMsg(c, 3, result.Error.Error())
 		return
 	}
+	respMsg(c, 0, "更新成功！")
 }
 
 // 新建角色
