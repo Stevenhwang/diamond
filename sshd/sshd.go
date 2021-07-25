@@ -21,17 +21,9 @@ import (
 )
 
 var (
-	DeadlineTimeout = 3 * time.Hour
+	DeadlineTimeout = 1 * time.Hour
 	IdleTimeout     = 30 * time.Minute
 )
-
-type Server struct {
-	ID       int    `db:"id"`
-	IP       string `db:"ip"`
-	USER     string `db:"user"`
-	PORT     int    `db:"port"`
-	PASSWORD string `db:"password"`
-}
 
 func passwordHandler(ctx ssh.Context, password string) bool {
 	// return password == "secret"
