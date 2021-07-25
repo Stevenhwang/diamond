@@ -247,7 +247,7 @@ func sshHandler(s ssh.Session) {
 				f, _ = os.Create(record_file)
 				defer f.Close()
 				// 记录文件头
-				timestamp := float64(now.UnixNano() / 1e9)
+				timestamp, _ := strconv.ParseFloat(fmt.Sprintf("%.9f", float64(now.UnixNano())/float64(1e9)), 64)
 				env := map[string]string{
 					"SHELL": "/bin/bash",
 					"TERM":  "xterm",
@@ -256,7 +256,7 @@ func sshHandler(s ssh.Session) {
 					"version":   2,
 					"width":     80,
 					"height":    40,
-					"timestamp": fmt.Sprintf("%v", timestamp),
+					"timestamp": timestamp,
 					"env":       env,
 				}
 				headerbyte, _ := json.Marshal(header)
@@ -269,8 +269,8 @@ func sshHandler(s ssh.Session) {
 						fmt.Println("out error:", err)
 						break
 					}
-					nt := float64(time.Now().UnixNano() / 1e9)
-					iodata := []string{fmt.Sprintf("%v", nt-timestamp), "o", string(buffer[:n])}
+					nt, _ := strconv.ParseFloat(fmt.Sprintf("%.9f", float64(time.Now().UnixNano())/float64(1e9)), 64)
+					iodata := []string{fmt.Sprintf("%.9f", nt-timestamp), "o", string(buffer[:n])}
 					iodatabyte, _ := json.Marshal(iodata)
 					f.WriteString(string(iodatabyte) + "\n")
 					// fmt.Println(string(buffer[:n]))
