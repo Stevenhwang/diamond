@@ -233,7 +233,7 @@ func sshHandler(s ssh.Session) {
 			// 开始记录终端录屏
 			now := time.Now()
 			time_str := now.Format("2006-01-02-15-04-05")
-			record_dir := "./record/"
+			record_dir := "./records/"
 			if !utils.PathExists(record_dir) {
 				os.Mkdir(record_dir, 0755)
 			}
@@ -243,7 +243,8 @@ func sshHandler(s ssh.Session) {
 			// 捕捉输出，输出有回显，可用来记录终端输入输出
 			out, _ := session.StdoutPipe()
 			go func() {
-				f, _ := os.OpenFile(record_file, os.O_APPEND, 0644)
+				var f *os.File
+				f, _ = os.Create(record_file)
 				defer f.Close()
 				// 记录文件头
 				timestamp := float64(now.UnixNano() / 1e9)
