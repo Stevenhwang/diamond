@@ -332,6 +332,6 @@ func Start() {
 	dat, _ := ioutil.ReadFile(keyPath)
 	key, _ := gossh.ParsePrivateKey(dat)
 	server.AddHostKey(key)
-	log.Println("starting sshd server ...")
+	log.Printf("starting sshd server on %s", addr)
 	log.Fatal(server.ListenAndServe())
 }
