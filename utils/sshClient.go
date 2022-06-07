@@ -8,6 +8,7 @@ import (
 	gossh "golang.org/x/crypto/ssh"
 )
 
+// 创建ssh client，认证方式支持password和key
 func GetSSHClient(host string, port int, user string, authType int, password string, key string) (*gossh.Client, error) {
 	if authType != 1 && authType != 2 {
 		return nil, errors.New("auth type is only 1 or 2")

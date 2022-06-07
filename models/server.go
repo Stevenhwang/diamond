@@ -4,23 +4,20 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/nulls"
 	"gorm.io/gorm"
 )
 
 type Server struct {
 	ID        uint         `json:"id"`
-	IP        string       `gorm:"size:128" json:"ip" filter:"ip" binding:"required,ipv4"`
+	IP        string       `gorm:"size:128" json:"ip" filter:"ip" validate:"required,ipv4"`
 	Hostname  nulls.String `gorm:"size:128" json:"hostname" filter:"ip"`
 	Remark    nulls.String `gorm:"size:256" json:"remark" filter:"remark"`
-	Port      int          `gorm:"default:22" json:"port" binding:"required"`
-	User      string       `gorm:"size:128" json:"user" binding:"required"`
-	AuthType  int          `json:"auth_type" binding:"required"` // 认证方式：1.password/2.key
+	Port      uint         `gorm:"default:22" json:"port" validate:"required"`
+	User      string       `gorm:"size:128" json:"user" validate:"required"`
+	AuthType  uint         `json:"auth_type" validate:"required"` // 认证方式：1.password/2.key
 	Password  nulls.String `gorm:"size:128" json:"password"`
-	Key       nulls.String `gorm:"type:text" json:"key"`
-	GroupID   nulls.Int    `json:"group_id"`
-	Records   Records      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
+	KeyID     nulls.UInt32 `json:"key_id"`
 	IsActive  bool         `gorm:"default:true" json:"is_active"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
@@ -37,49 +34,25 @@ func (s *Server) BeforeCreate(tx *gorm.DB) (err error) {
 			return errors.New("need password")
 		}
 	} else {
-		if len(s.Key.String) == 0 {
+		if !s.KeyID.Valid {
 			return errors.New("need key")
 		}
 	}
 	return nil
 }
 
-func GetServerList(c *gin.Context) (servers Servers, total int64, err error) {
-	servers = Servers{}
-	uid := c.GetUint("user_id")
-	isSuperuser := c.GetBool("is_superuser")
-	if isSuperuser {
-		baseQuery := DB.Model(&Server{}).Scopes(Filter(Server{}, c))
-		if groupID := c.Query("group_id"); len(groupID) > 0 {
-			baseQuery.Where("group_id = ?", groupID).Count(&total)
-			result := baseQuery.Scopes(Paginate(c)).Where("group_id = ?", groupID).Omit("password", "key").Find(&servers)
-			return servers, total, result.Error
-		}
-		baseQuery.Count(&total)
-		result := baseQuery.Scopes(Paginate(c)).Omit("password", "key").Find(&servers)
-		return servers, total, result.Error
+func (s *Server) BeforeUpdate(tx *gorm.DB) (err error) {
+	if s.AuthType != 1 && s.AuthType != 2 {
+		return errors.New("auth type is only 1 or 2")
 	}
-	user := &User{}
-	serverMap := map[uint]bool{}
-	DB.Preload("Roles.Groups.Servers").First(user, uid)
-	for _, role := range user.Roles {
-		if role.IsActive {
-			for _, group := range role.Groups {
-				if group.IsActive {
-					for _, server := range group.Servers {
-						if server.IsActive {
-							serverMap[server.ID] = true
-						}
-					}
-				}
-			}
+	if s.AuthType == 1 {
+		if len(s.Password.String) == 0 {
+			return errors.New("need password")
+		}
+	} else {
+		if !s.KeyID.Valid {
+			return errors.New("need key")
 		}
 	}
-	sIDList := []int{}
-	for k := range serverMap {
-		sIDList = append(sIDList, int(k))
-	}
-	DB.Model(&Server{}).Scopes(Filter(Server{}, c)).Where("id IN ?", sIDList).Count(&total)
-	result := DB.Scopes(Filter(Server{}, c), Paginate(c)).Omit("password", "key").Find(&servers, sIDList)
-	return servers, total, result.Error
+	return nil
 }

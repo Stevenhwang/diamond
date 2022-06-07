@@ -1,13 +1,10 @@
 package models
 
 import (
-	"errors"
+	"diamond/utils"
 	"strconv"
 	"time"
 
-	"diamond/utils.go"
-
-	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/nulls"
 	"github.com/pquerna/otp/totp"
 	"gorm.io/gorm"
@@ -15,9 +12,9 @@ import (
 
 type User struct {
 	ID            uint         `json:"id"`
-	Username      string       `gorm:"size:128;unique" filter:"username" json:"username" binding:"required"`
+	Username      string       `gorm:"size:128;unique" filter:"username" json:"username" validate:"required"`
 	Password      string       `gorm:"size:128" json:"password"`
-	Email         nulls.String `gorm:"size:128" filter:"email" json:"email" binding:"omitempty,email"`
+	Email         nulls.String `gorm:"size:128" filter:"email" json:"email" validate:"omitempty,email"`
 	Telephone     nulls.String `gorm:"size:20" filter:"telephone" json:"telephone"`
 	Department    nulls.String `gorm:"size:128" filter:"department" json:"department"`
 	GoogleKey     nulls.String `gorm:"size:256" json:"google_key"`
@@ -25,7 +22,6 @@ type User struct {
 	IsSuperuser   bool         `gorm:"default:false" json:"is_superuser"`
 	LastLoginIP   nulls.String `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
 	LastLoginTime nulls.Time   `json:"last_login_time"`
-	Roles         []*Role      `gorm:"many2many:user_roles" json:"-"`
 	CreatedAt     time.Time    `json:"created_at"`
 	UpdatedAt     time.Time    `json:"updated_at"`
 }
@@ -33,10 +29,6 @@ type User struct {
 type Users []User
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	if len(u.Username) == 0 {
-		return errors.New("用户名不能为空")
-	}
-	// set password
 	if len(u.Password) == 0 {
 		u.Password = "12345678" // 默认密码
 	}
@@ -53,10 +45,10 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 		if len(u.Email.String) > 0 {
 			accountName = u.Email.String
 		} else {
-			accountName = u.Username + "@example.com"
+			accountName = u.Username + "@diamond"
 		}
 		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      u.Username,
+			Issuer:      "diamond",
 			AccountName: accountName,
 		})
 		if err != nil {
@@ -72,9 +64,6 @@ func (u *User) AfterCreate(tx *gorm.DB) (err error) {
 }
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
-	if len(u.Username) == 0 {
-		return errors.New("用户名不能为空")
-	}
 	if len(u.Password) > 0 {
 		pass, err := utils.GeneratePassword(u.Password)
 		if err != nil {
@@ -84,22 +73,22 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	}
 	// 处理otpkey更新
 	otpKey, _ := strconv.Atoi(u.GoogleKey.String)
-	if otpKey == 2 {
+	if otpKey == 2 { // 重置key
 		var accountName string
 		if len(u.Email.String) > 0 {
 			accountName = u.Email.String
 		} else {
-			accountName = u.Username + "@example.com"
+			accountName = u.Username + "@diamond"
 		}
 		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      u.Username,
+			Issuer:      "diamond",
 			AccountName: accountName,
 		})
 		if err != nil {
 			return err
 		}
 		u.GoogleKey = nulls.NewString(key.Secret())
-	} else if otpKey == 3 {
+	} else if otpKey == 3 { // 清空key
 		u.GoogleKey = nulls.NewString("")
 	}
 	// 处理is_active更新
@@ -115,19 +104,4 @@ func (u *User) AfterUpdate(tx *gorm.DB) (err error) {
 
 func (u *User) AfterDelete(tx *gorm.DB) (err error) {
 	return
-}
-
-func GetUserList(c *gin.Context) (users Users, total int64, err error) {
-	users = Users{}
-	// 使用role_id查找的时候不用分页，也不用filter
-	if roleID := c.Query("role_id"); len(roleID) > 0 {
-		role := &Role{}
-		DB.First(role, roleID)
-		total = DB.Model(role).Association("Users").Count()
-		err := DB.Model(role).Omit("password").Association("Users").Find(users)
-		return users, total, err
-	}
-	DB.Model(&User{}).Scopes(Filter(User{}, c)).Count(&total)
-	result := DB.Scopes(Filter(User{}, c), Paginate(c)).Omit("password").Find(&users)
-	return users, total, result.Error
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// RDClient redis客户端
-var RDClient *redis.Client
+// RDC redis客户端
+var RDC *redis.Client
 
 func init() {
 	host := config.Config.Get("redis.host")
@@ -20,7 +20,7 @@ func init() {
 	poolSize := int(config.Config.Get("redis.poolSize").(float64))
 
 	addr := fmt.Sprintf("%v:%v", host, port)
-	RDClient = redis.NewClient(&redis.Options{
+	RDC = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       dbName,
@@ -32,7 +32,7 @@ func init() {
 func SetToken(uid uint, token string) {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
-	err := RDClient.Set(ctx, key, token, 24*time.Hour).Err()
+	err := RDC.Set(ctx, key, token, 24*time.Hour).Err()
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +42,7 @@ func SetToken(uid uint, token string) {
 func GetToken(uid uint) string {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
-	token, err := RDClient.Get(ctx, key).Result()
+	token, err := RDC.Get(ctx, key).Result()
 	if err != nil {
 		return ""
 	}
@@ -53,7 +53,7 @@ func GetToken(uid uint) string {
 func DelToken(uid uint) {
 	ctx := context.Background()
 	key := fmt.Sprintf("uid_%v_token", uid)
-	err := RDClient.Del(ctx, key).Err()
+	err := RDC.Del(ctx, key).Err()
 	if err != nil {
 		panic(err)
 	}

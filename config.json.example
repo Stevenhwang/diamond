@@ -1,24 +1,23 @@
 {
+    "api": {
+        "addr": ":3000"
+    },
     "mysql": {
-        "host": "192.168.241.130",
+        "host": "192.168.1.188",
         "port": 3306,
         "user": "root",
-        "password": "#yz2NRz30d_>m^:n90^V",
+        "password": "test123456",
         "dbName": "diamond"
     },
     "redis": {
-        "host": "192.168.241.130",
+        "host": "192.168.1.188",
         "port": 6379,
-        "password": "123456",
+        "password": "123qwe",
         "dbName": 6,
         "poolSize": 25
     },
-    "api": {
-        "addr": ":3000",
-        "debug": true
-    },
     "jwt": {
-        "secret": "725dqu0hz!eu&3ol%calgjk^twovt4oe5%c$0$_0kbw+lnj%pc"
+        "secret": "secret"
     },
     "sshd": {
         "addr": ":2222",

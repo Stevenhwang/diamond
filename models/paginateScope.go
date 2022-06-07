@@ -3,18 +3,18 @@ package models
 import (
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
 // 分页
-func Paginate(c *gin.Context) func(db *gorm.DB) *gorm.DB {
+func Paginate(c echo.Context) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		page, _ := strconv.Atoi(c.Query("page"))
+		page, _ := strconv.Atoi(c.QueryParam("page"))
 		if page <= 0 {
 			page = 1
 		}
-		pageSize, _ := strconv.Atoi(c.Query("limit"))
+		pageSize, _ := strconv.Atoi(c.QueryParam("limit"))
 		if pageSize <= 0 {
 			pageSize = 15
 		}

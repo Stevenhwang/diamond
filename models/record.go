@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -25,18 +24,4 @@ func (r *Record) AfterDelete(tx *gorm.DB) (err error) {
 	}
 	log.Println("removed")
 	return
-}
-
-func GetRecordList(c *gin.Context) (records Records, total int64, err error) {
-	records = Records{}
-	query := DB.Model(&Record{}).Scopes(Filter(Record{}, c))
-	if len(c.Query("date_before")) > 0 {
-		query.Where("created_at <= ?", c.Query("date_before"))
-	}
-	if len(c.Query("date_after")) > 0 {
-		query.Where("created_at >= ?", c.Query("date_after"))
-	}
-	query.Count(&total)
-	result := query.Scopes(Paginate(c)).Order("created_at desc").Find(&records)
-	return records, total, result.Error
 }

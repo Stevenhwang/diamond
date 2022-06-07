@@ -8,11 +8,13 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"diamond/config"
 	"diamond/models"
-	"diamond/utils.go"
+	"diamond/policy"
+	"diamond/utils"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/olekukonko/tablewriter"
@@ -26,7 +28,6 @@ var (
 )
 
 func passwordHandler(ctx ssh.Context, password string) bool {
-	// return password == "secret"
 	user := &models.User{}
 	if result := models.DB.Where("username = ?", ctx.User()).First(user); result.Error != nil {
 		return false
@@ -47,11 +48,12 @@ func sshHandler(s ssh.Session) {
 	io.WriteString(s, fmt.Sprintf("\n***** Timeout after %s of no activity *****\n\n", IdleTimeout))
 	// 输出服务器分组信息
 	user := &models.User{}
-	models.DB.Preload("Roles.Groups").Where("username = ?", s.User()).First(user)
+	models.DB.Where("username = ?", s.User()).First(user)
 	groupTable := tablewriter.NewWriter(s)
 	groupTable.SetHeader([]string{"id", "name"})
 	groupTable.Append([]string{"0", "ALL(所有服务器)"})
 	groupMap := map[uint]string{}
+	var gids []string // 普通用户服务器组
 	if user.IsSuperuser {
 		groups := &models.Groups{}
 		models.DB.Find(groups)
@@ -59,19 +61,22 @@ func sshHandler(s ssh.Session) {
 			groupMap[v.ID] = v.Name
 		}
 	} else {
-		for _, role := range user.Roles {
-			if role.IsActive {
-				for _, group := range role.Groups {
-					if group.IsActive {
-						groupMap[group.ID] = group.Name
-					}
-				}
+		sub := fmt.Sprintf("user::%d", user.ID)
+		perms, _ := policy.Enforcer.GetNamedImplicitPermissionsForUser("p", sub)
+		for _, perm := range perms {
+			if utils.FindValInSlice(perm, "server") {
+				gids = append(gids, strings.ReplaceAll(perm[1], "group::", ""))
+			}
+		}
+		groups := &models.Groups{}
+		models.DB.Where("id IN ?", gids).Find(&groups)
+		for _, g := range *groups {
+			if g.IsActive {
+				groupMap[g.ID] = g.Name
 			}
 		}
 	}
-	gIDList := []int{}
 	for k, v := range groupMap {
-		gIDList = append(gIDList, int(k))
 		groupTable.Append([]string{strconv.Itoa(int(k)), v})
 	}
 	groupTable.Render()
@@ -108,37 +113,45 @@ func sshHandler(s ssh.Session) {
 		io.WriteString(s, err.Error())
 		s.Exit(1)
 	}
+	// 服务器查找
 	serverMap := map[uint]models.Server{}
+	rules := policy.Enforcer.GetNamedGroupingPolicy("g2")
 	if groupID == 0 {
 		log.Println("展示所有服务器")
+		servers := &models.Servers{}
 		if user.IsSuperuser {
-			servers := &models.Servers{}
 			models.DB.Find(servers)
 			for _, s := range *servers {
 				serverMap[s.ID] = s
 			}
 		} else {
-			groups := &models.Groups{}
-			models.DB.Preload("Servers").Find(groups, gIDList)
-			for _, g := range *groups {
-				for _, server := range g.Servers {
-					if server.IsActive {
-						serverMap[server.ID] = server
-					}
+			sids := []string{}
+			for _, rule := range rules {
+				sids = append(sids, strings.ReplaceAll(rule[0], "server::", ""))
+			}
+			models.DB.Where("id IN ?", sids).Find(&servers)
+			for _, server := range *servers {
+				if server.IsActive {
+					serverMap[server.ID] = server
 				}
 			}
 		}
 	} else {
 		if _, ok := groupMap[uint(groupID)]; ok {
 			log.Println("展示选择的组里的服务器")
-			group := &models.Group{}
-			models.DB.Preload("Servers").Find(group, groupID)
-			if user.IsSuperuser {
-				for _, s := range group.Servers {
-					serverMap[s.ID] = s
+			sids := []string{}
+			for _, rule := range rules {
+				x := fmt.Sprintf("group::%s", groupInput)
+				if rule[1] == x {
+					sids = append(sids, strings.ReplaceAll(rule[0], "server::", ""))
 				}
-			} else {
-				for _, s := range group.Servers {
+			}
+			servers := &models.Servers{}
+			models.DB.Where("id IN ?", sids).Find(&servers)
+			for _, s := range *servers {
+				if user.IsSuperuser {
+					serverMap[s.ID] = s
+				} else {
 					if s.IsActive {
 						serverMap[s.ID] = s
 					}
@@ -189,10 +202,12 @@ func sshHandler(s ssh.Session) {
 		s.Exit(1)
 	} else {
 		log.Printf("连接服务器%d...", server.ID)
+		key := &models.Key{}
+		models.DB.First(key, server.KeyID.UInt32)
 		// 连接远程服务器
 		_, winCh, isPty := s.Pty()
 		if isPty {
-			client, err := utils.GetSSHClient(server.IP, server.Port, server.User, server.AuthType, server.Password.String, server.Key.String)
+			client, err := utils.GetSSHClient(server.IP, int(server.Port), server.User, int(server.AuthType), server.Password.String, key.Content)
 			if err != nil {
 				log.Println(err)
 				io.WriteString(s, fmt.Sprintf("连接服务器失败: %v", err))
@@ -222,7 +237,6 @@ func sshHandler(s ssh.Session) {
 			session.Stdin = s
 			// session.Stdout = s
 			session.Stderr = s
-
 			// 开始记录终端录屏
 			now := time.Now()
 			time_str := now.Format("2006-01-02-15-04-05")
