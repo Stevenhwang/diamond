@@ -47,31 +47,35 @@ func sshHandler(s ssh.Session) {
 	io.WriteString(s, fmt.Sprintf("\n***** Connections will only last %s *****\n", DeadlineTimeout))
 	io.WriteString(s, fmt.Sprintf("\n***** Timeout after %s of no activity *****\n\n", IdleTimeout))
 	// 输出服务器分组信息
+	// 获取当前用户
 	user := &models.User{}
 	models.DB.Where("username = ?", s.User()).First(user)
+	// 获取所有分组
+	groups := &models.Groups{}
+	models.DB.Find(groups)
+	// 初始化groupTable
 	groupTable := tablewriter.NewWriter(s)
 	groupTable.SetHeader([]string{"id", "name"})
 	groupTable.Append([]string{"0", "ALL(所有服务器)"})
 	groupMap := map[uint]string{}
-	var gids []string // 普通用户服务器组
 	if user.IsSuperuser {
-		groups := &models.Groups{}
-		models.DB.Find(groups)
 		for _, v := range *groups {
 			groupMap[v.ID] = v.Name
 		}
 	} else {
 		sub := fmt.Sprintf("user::%d", user.ID)
-		perms, _ := policy.Enforcer.GetNamedImplicitPermissionsForUser("p", sub)
-		for _, perm := range perms {
-			if utils.FindValInSlice(perm, "server") {
-				gids = append(gids, strings.ReplaceAll(perm[1], "group::", ""))
-			}
-		}
-		groups := &models.Groups{}
-		models.DB.Where("id IN ?", gids).Find(&groups)
+		var requests [][]interface{}
 		for _, g := range *groups {
-			if g.IsActive {
+			obj := fmt.Sprintf("group::%d", g.ID)
+			requests = append(requests, []interface{}{sub, obj, "server"})
+		}
+		results, err := policy.Enforcer.BatchEnforce(requests)
+		if err != nil {
+			io.WriteString(s, err.Error())
+			s.Exit(1)
+		}
+		for i, g := range *groups {
+			if results[i] && g.IsActive {
 				groupMap[g.ID] = g.Name
 			}
 		}
@@ -115,24 +119,30 @@ func sshHandler(s ssh.Session) {
 	}
 	// 服务器查找
 	serverMap := map[uint]models.Server{}
-	rules := policy.Enforcer.GetNamedGroupingPolicy("g2")
+	// 获取所有服务器
+	servers := &models.Servers{}
+	models.DB.Find(servers)
 	if groupID == 0 {
 		log.Println("展示所有服务器")
-		servers := &models.Servers{}
 		if user.IsSuperuser {
-			models.DB.Find(servers)
 			for _, s := range *servers {
 				serverMap[s.ID] = s
 			}
 		} else {
-			sids := []string{}
-			for _, rule := range rules {
-				sids = append(sids, strings.ReplaceAll(rule[0], "server::", ""))
+			sub := fmt.Sprintf("user::%d", user.ID)
+			var requests [][]interface{}
+			for _, s := range *servers {
+				obj := fmt.Sprintf("server::%d", s.ID)
+				requests = append(requests, []interface{}{sub, obj, "server"})
 			}
-			models.DB.Where("id IN ?", sids).Find(&servers)
-			for _, server := range *servers {
-				if server.IsActive {
-					serverMap[server.ID] = server
+			results, err := policy.Enforcer.BatchEnforce(requests)
+			if err != nil {
+				io.WriteString(s, err.Error())
+				s.Exit(1)
+			}
+			for i, s := range *servers {
+				if results[i] && s.IsActive {
+					serverMap[s.ID] = s
 				}
 			}
 		}
@@ -140,6 +150,7 @@ func sshHandler(s ssh.Session) {
 		if _, ok := groupMap[uint(groupID)]; ok {
 			log.Println("展示选择的组里的服务器")
 			sids := []string{}
+			rules := policy.Enforcer.GetNamedGroupingPolicy("g2")
 			for _, rule := range rules {
 				x := fmt.Sprintf("group::%s", groupInput)
 				if rule[1] == x {
