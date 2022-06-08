@@ -19,8 +19,7 @@ func Enforce(next echo.HandlerFunc) echo.HandlerFunc {
 		} else {
 			// 加前缀区分user和role
 			sub := fmt.Sprintf("user::%d", uid)
-			obj := fmt.Sprintf("%s %s", c.Request().Method, c.Request().URL.Path)
-			pass, err := policy.Enforcer.Enforce(sub, obj, "route")
+			pass, err := policy.Enforcer.Enforce(sub, c.Request().URL.Path, c.Request().Method)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusForbidden, "This action is forbidden")
 			}

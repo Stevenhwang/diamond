@@ -48,7 +48,7 @@ func init() {
 		log.Fatalln("init policy enforcer failed: ", err)
 	}
 	// add match func
-	e.AddNamedMatchingFunc("g", "KeyMatch2", util.KeyMatch2)
+	e.AddNamedMatchingFunc("g2", "KeyMatch2", util.KeyMatch2)
 	// Load the policy from DB.
 	e.LoadPolicy()
 
@@ -57,8 +57,8 @@ func init() {
 
 /* policy
 // route policy
-p, role::1, GET /api/users, route
-p, role::2, POST /api/users, route
+p, role::1, /api/users, GET
+p, role::2, /api/users, POST
 
 // menu policy
 p, role::1, system, menu
