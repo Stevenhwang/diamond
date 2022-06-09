@@ -2,17 +2,42 @@ package actions
 
 import (
 	"diamond/models"
+	"diamond/policy"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-// FIXME 数据权限过滤
 func getServers(c echo.Context) error {
 	var total int64
 	servers := models.Servers{}
-	models.DB.Model(&models.Server{}).Scopes(models.Filter(models.Server{}, c)).Count(&total)
-	result := models.DB.Scopes(models.Filter(models.Server{}, c), models.Paginate(c)).Find(&servers)
+	is_superuser := c.Get("is_superuser").(bool)
+	basequery := models.DB.Model(&models.Server{}).Scopes(models.Filter(models.Server{}, c))
+	if !is_superuser {
+		uid := c.Get("uid").(string)
+		sub := fmt.Sprintf("user::%s", uid)
+		var sids models.Servers
+		models.DB.Model(&models.Server{}).Select("id", "is_active").Find(&sids)
+		var requests [][]interface{}
+		for _, s := range sids {
+			obj := fmt.Sprintf("server::%d", s.ID)
+			requests = append(requests, []interface{}{sub, obj, "server"})
+		}
+		results, err := policy.Enforcer.BatchEnforce(requests)
+		if err != nil {
+			return c.JSON(http.StatusOK, H{"code": 1, "message": err.Error()})
+		}
+		var res []uint
+		for i, r := range sids {
+			if results[i] && r.IsActive {
+				res = append(res, r.ID)
+			}
+		}
+		basequery = basequery.Where("id IN ?", res)
+	}
+	basequery.Count(&total)
+	result := basequery.Scopes(models.Paginate(c)).Find(&servers)
 	if result.Error != nil {
 		return c.JSON(http.StatusOK, H{"code": 1, "message": result.Error.Error()})
 	}

@@ -9,12 +9,35 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// FIXME 数据权限过滤
 func getGroups(c echo.Context) error {
 	var total int64
 	groups := models.Groups{}
-	models.DB.Model(&models.Group{}).Scopes(models.Filter(models.Group{}, c)).Count(&total)
-	result := models.DB.Scopes(models.Filter(models.Group{}, c), models.Paginate(c)).Find(&groups)
+	is_superuser := c.Get("is_superuser").(bool)
+	basequery := models.DB.Model(&models.Group{}).Scopes(models.Filter(models.Group{}, c))
+	if !is_superuser {
+		uid := c.Get("uid").(string)
+		sub := fmt.Sprintf("user::%s", uid)
+		var gids models.Groups
+		models.DB.Model(&models.Group{}).Select("id", "is_active").Find(&gids)
+		var requests [][]interface{}
+		for _, s := range gids {
+			obj := fmt.Sprintf("group::%d", s.ID)
+			requests = append(requests, []interface{}{sub, obj, "group"})
+		}
+		results, err := policy.Enforcer.BatchEnforce(requests)
+		if err != nil {
+			return c.JSON(http.StatusOK, H{"code": 1, "message": err.Error()})
+		}
+		var res []uint
+		for i, r := range gids {
+			if results[i] && r.IsActive {
+				res = append(res, r.ID)
+			}
+		}
+		basequery = basequery.Where("id IN ?", res)
+	}
+	basequery.Count(&total)
+	result := basequery.Scopes(models.Paginate(c)).Find(&groups)
 	if result.Error != nil {
 		return c.JSON(http.StatusOK, H{"code": 1, "message": result.Error.Error()})
 	}
