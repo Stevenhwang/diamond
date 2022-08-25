@@ -31,9 +31,9 @@ func init() {
 		panic(err)
 	}
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
-	sqlDB.SetMaxIdleConns(20)
+	sqlDB.SetMaxIdleConns(5)
 	// SetMaxOpenConns 设置打开数据库连接的最大数量
-	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetMaxOpenConns(20)
 	// SetConnMaxLifetime 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	// 迁移 schema
