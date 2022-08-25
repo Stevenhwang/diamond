@@ -13,7 +13,7 @@ var apiCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		app := actions.App
-		addr := config.Config.Get("api.addr").(string)
+		addr := config.Config.GetString("api.addr")
 		app.Logger.Fatal(app.Start(addr))
 	},
 }

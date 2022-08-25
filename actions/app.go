@@ -81,7 +81,7 @@ func init() {
 
 	// jwt middleware
 	api.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte(config.Config.Get("jwt.secret").(string)),
+		SigningKey: []byte(config.Config.GetString("jwt.secret")),
 	}))
 	// token middleware
 	api.Use(middlewares.Token)

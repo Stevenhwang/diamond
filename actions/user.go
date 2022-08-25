@@ -62,7 +62,7 @@ func login(c echo.Context) error {
 	}
 	// Create token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(config.Config.Get("jwt.secret").(string)))
+	t, err := token.SignedString([]byte(config.Config.GetString("jwt.secret")))
 	if err != nil {
 		return c.JSON(http.StatusOK, H{"code": 8, "message": err})
 	}

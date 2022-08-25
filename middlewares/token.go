@@ -14,7 +14,7 @@ func Token(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		token := c.Get("user").(*jwt.Token)
 		// get token from request
-		t, _ := token.SignedString([]byte(config.Config.Get("jwt.secret").(string)))
+		t, _ := token.SignedString([]byte(config.Config.GetString("jwt.secret")))
 		claims := token.Claims.(jwt.MapClaims)
 		uid := uint(claims["uid"].(float64))
 		username := claims["username"].(string)

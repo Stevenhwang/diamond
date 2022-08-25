@@ -331,8 +331,8 @@ func sshHandler(s ssh.Session) {
 }
 
 func Start() {
-	addr := config.Config.Get("sshd.addr").(string)
-	keyPath := config.Config.Get("sshd.keyPath").(string)
+	addr := config.Config.GetString("sshd.addr")
+	keyPath := config.Config.GetString("sshd.keyPath")
 	server := &ssh.Server{
 		Addr:            addr,
 		MaxTimeout:      DeadlineTimeout,
