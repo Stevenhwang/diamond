@@ -123,7 +123,7 @@ func init() {
 
 	// 反向代理 navicat http 隧道，密码保护
 	naviURL, _ := url.Parse(misc.Config.GetString("navicate.url"))
-	navi := e.Group("/navicate", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		user := models.User{}
 		if result := models.DB.Where("username = ?", username).First(&user); result.Error != nil {
 			return false, nil
