@@ -263,6 +263,7 @@ func sshHandler(s ssh.Session) {
 }
 
 func Start(addr string, keyPath string) {
+	forwardHandler := &ssh.ForwardedTCPHandler{}
 	server := &ssh.Server{
 		Addr:             addr,
 		MaxTimeout:       DeadlineTimeout,
@@ -270,6 +271,18 @@ func Start(addr string, keyPath string) {
 		PasswordHandler:  passwordHandler,
 		PublicKeyHandler: publickeyHandler,
 		Handler:          sshHandler,
+		LocalPortForwardingCallback: ssh.LocalPortForwardingCallback(func(ctx ssh.Context, dhost string, dport uint32) bool {
+			misc.Logger.Info().Str("from", "sshd").Msg(fmt.Sprintf("Accepted forward host:%s port:%d", dhost, dport))
+			return true
+		}),
+		ReversePortForwardingCallback: ssh.ReversePortForwardingCallback(func(ctx ssh.Context, host string, port uint32) bool {
+			misc.Logger.Info().Str("from", "sshd").Msg(fmt.Sprintf("attempt to bind host:%s port:%d", host, port))
+			return true
+		}),
+		RequestHandlers: map[string]ssh.RequestHandler{
+			"tcpip-forward":        forwardHandler.HandleSSHRequest,
+			"cancel-tcpip-forward": forwardHandler.HandleSSHRequest,
+		},
 	}
 	dat, err := os.ReadFile(keyPath)
 	if err != nil {

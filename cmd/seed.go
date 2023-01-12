@@ -19,7 +19,7 @@ var seedCmd = &cobra.Command{
 		if res.Error != nil {
 			misc.Logger.Error().Err(res.Error).Msg("")
 		} else {
-			fmt.Printf("seed admin success with password: %s", password)
+			fmt.Printf("seed admin success with password: %s\n", password)
 		}
 	},
 }

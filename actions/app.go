@@ -4,17 +4,14 @@ import (
 	"database/sql/driver"
 	"diamond/middlewares"
 	"diamond/misc"
-	"diamond/models"
 	"fmt"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"reflect"
 
 	"diamond/frontend"
 
 	"github.com/Stevenhwang/gommon/nulls"
-	"github.com/Stevenhwang/gommon/tools"
 
 	"github.com/go-playground/validator/v10"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -120,28 +117,6 @@ func init() {
 
 	// ssh records 目录
 	e.Static("/records", "./records")
-
-	// 反向代理 navicat http 隧道，密码保护
-	naviURL, _ := url.Parse(misc.Config.GetString("navicate.url"))
-	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		user := models.User{}
-		if result := models.DB.Where("username = ?", username).First(&user); result.Error != nil {
-			return false, nil
-		}
-		// 验证密码
-		if !tools.CheckPassword(user.Password, password) {
-			return false, nil
-		}
-		if !user.IsActive {
-			return false, nil
-		}
-		return true, nil
-	}))
-	navi.Use(middleware.Proxy(middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{
-		{
-			URL: naviURL,
-		},
-	})))
 
 	// api group route
 	api := e.Group("/api")
