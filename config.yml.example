@@ -6,3 +6,6 @@ mysql:
   dbName: diamond
 jwt:
   secret: secret
+# 反向代理 navicat http 隧道，密码保护，不使用可忽略
+navicate:
+  url: http://localhost:3306
