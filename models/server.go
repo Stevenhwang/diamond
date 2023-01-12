@@ -1,58 +1,62 @@
 package models
 
 import (
-	"errors"
 	"time"
 
-	"github.com/gobuffalo/nulls"
 	"gorm.io/gorm"
 )
 
+var InstanceTypes = map[string]string{
+	"t2.nano":    "1核0.5G",
+	"t2.micro":   "1核1G",
+	"t2.small":   "1核2G",
+	"t2.medium":  "2核4G",
+	"t2.large":   "2核8G",
+	"t2.xlarge":  "4核16G",
+	"t2.2xlarge": "8核32G",
+	"t3.nano":    "2核0.5G",
+	"t3.micro":   "2核1G",
+	"t3.small":   "2核2G",
+	"t3.medium":  "2核4G",
+	"t3.large":   "2核8G",
+	"t3.xlarge":  "4核16G",
+	"t3.2xlarge": "8核32G",
+	"c4.large":   "2核3.75G",
+	"c4.xlarge":  "4核7.5G",
+	"c4.2xlarge": "8核15G",
+	"c4.4xlarge": "16核30G",
+	"c4.8xlarge": "36核60G",
+	"c5.large":   "2核4G",
+	"c5.xlarge":  "4核8G",
+	"c5.2xlarge": "8核16G",
+	"c5.4xlarge": "16核32G",
+}
+
 type Server struct {
-	ID        uint         `json:"id"`
-	IP        string       `gorm:"size:128" json:"ip" filter:"ip" validate:"required,ipv4"`
-	Hostname  nulls.String `gorm:"size:128" json:"hostname" filter:"hostname"`
-	Remark    nulls.String `gorm:"size:256" json:"remark" filter:"remark"`
-	Port      uint         `gorm:"default:22" json:"port" validate:"required"`
-	User      string       `gorm:"size:128" json:"user" validate:"required"`
-	AuthType  uint         `json:"auth_type" validate:"required"` // 认证方式：1.password/2.key
-	Password  nulls.String `gorm:"size:128" json:"password"`
-	KeyID     nulls.UInt32 `json:"key_id"`
-	IsActive  bool         `gorm:"default:true" json:"is_active"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+	ID             uint      `json:"id"`
+	Name           string    `gorm:"size:128" json:"name" validate:"required"` // 机器名称或主机名
+	IP             string    `gorm:"size:128;unique" json:"ip" validate:"required,ip"`
+	Port           uint      `gorm:"default:22" json:"port" validate:"required,gte=0,lte=65535"`
+	CredentialID   uint      `json:"credential_id" validate:"required"` // 关联认证
+	Remark         string    `gorm:"type:text" json:"remark"`           // 记录机器用途
+	InstanceType   string    `gorm:"size:128" json:"instance_type"`     // 实例类型
+	Specifications string    `gorm:"size:128" json:"specifications"`    // 实例配置
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Servers []Server
 
 func (s *Server) BeforeCreate(tx *gorm.DB) (err error) {
-	if s.AuthType != 1 && s.AuthType != 2 {
-		return errors.New("auth type is only 1 or 2")
-	}
-	if s.AuthType == 1 {
-		if len(s.Password.String) == 0 {
-			return errors.New("need password")
-		}
-	} else {
-		if !s.KeyID.Valid {
-			return errors.New("need key")
-		}
+	if len(s.InstanceType) > 0 {
+		s.Specifications = InstanceTypes[s.InstanceType]
 	}
 	return nil
 }
 
 func (s *Server) BeforeUpdate(tx *gorm.DB) (err error) {
-	if s.AuthType != 1 && s.AuthType != 2 {
-		return errors.New("auth type is only 1 or 2")
-	}
-	if s.AuthType == 1 {
-		if len(s.Password.String) == 0 {
-			return errors.New("need password")
-		}
-	} else {
-		if !s.KeyID.Valid {
-			return errors.New("need key")
-		}
+	if len(s.InstanceType) > 0 {
+		s.Specifications = InstanceTypes[s.InstanceType]
 	}
 	return nil
 }

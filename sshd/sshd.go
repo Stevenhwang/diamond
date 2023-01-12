@@ -1,38 +1,37 @@
 package sshd
 
 import (
+	"diamond/misc"
+	"diamond/models"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
-	"diamond/config"
-	"diamond/models"
-	"diamond/policy"
-	"diamond/utils"
-
+	myssh "github.com/Stevenhwang/gommon/ssh"
+	"github.com/Stevenhwang/gommon/times"
+	"github.com/Stevenhwang/gommon/tools"
 	"github.com/gliderlabs/ssh"
 	"github.com/olekukonko/tablewriter"
 	gossh "golang.org/x/crypto/ssh"
 	"golang.org/x/term"
+	"gorm.io/gorm"
 )
 
 var (
-	DeadlineTimeout = 1 * time.Hour
-	IdleTimeout     = 30 * time.Minute
+	DeadlineTimeout = 30 * time.Minute
+	IdleTimeout     = 5 * time.Minute
 )
 
 func passwordHandler(ctx ssh.Context, password string) bool {
-	user := &models.User{}
-	if result := models.DB.Where("username = ?", ctx.User()).First(user); result.Error != nil {
+	user := models.User{}
+	if res := models.DB.Where("username = ?", ctx.User()).First(&user); res.Error != nil {
 		return false
 	}
-	if !utils.CheckPassword(user.Password, password) {
+	if !tools.CheckPassword(user.Password, password) {
 		return false
 	}
 	if !user.IsActive {
@@ -41,160 +40,75 @@ func passwordHandler(ctx ssh.Context, password string) bool {
 	return true
 }
 
+func publickeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
+	user := models.User{}
+	if res := models.DB.Where("username = ?", ctx.User()).First(&user); res.Error != nil {
+		return false
+	}
+	data := user.Publickey
+	allowed, _, _, _, err := ssh.ParseAuthorizedKey([]byte(data))
+	if err != nil {
+		return false
+	}
+	return ssh.KeysEqual(key, allowed)
+}
+
 func sshHandler(s ssh.Session) {
 	// 登录成功后提示信息
-	io.WriteString(s, "\n***** Welcome to diamond *****\n")
-	io.WriteString(s, fmt.Sprintf("\n***** Connections will only last %s *****\n", DeadlineTimeout))
-	io.WriteString(s, fmt.Sprintf("\n***** Timeout after %s of no activity *****\n\n", IdleTimeout))
-	// 输出服务器分组信息
-	// 获取当前用户
-	user := &models.User{}
-	models.DB.Where("username = ?", s.User()).First(user)
-	// 获取所有分组
-	groups := &models.Groups{}
-	models.DB.Find(groups)
-	// 初始化groupTable
-	groupTable := tablewriter.NewWriter(s)
-	groupTable.SetHeader([]string{"id", "name"})
-	groupTable.Append([]string{"0", "ALL(所有服务器)"})
-	groupMap := map[uint]string{}
-	if user.IsSuperuser {
-		for _, v := range *groups {
-			groupMap[v.ID] = v.Name
+	io.WriteString(s, "================================\r\n")
+	io.WriteString(s, fmt.Sprintf("连接最长%s, 空闲超时%s\r\n", DeadlineTimeout, IdleTimeout))
+	io.WriteString(s, "================================\r\n")
+	// 获取当前用户的服务器信息
+	user := models.User{}
+	servers := models.Servers{}
+	if s.User() == "admin" {
+		if res := models.DB.Order("created_at desc").Find(&servers); res.Error != nil {
+			io.WriteString(s, res.Error.Error())
+			s.Exit(1)
+			return
 		}
 	} else {
-		sub := fmt.Sprintf("user::%d", user.ID)
-		var requests [][]interface{}
-		for _, g := range *groups {
-			obj := fmt.Sprintf("group::%d", g.ID)
-			requests = append(requests, []interface{}{sub, obj, "server"})
-		}
-		results, err := policy.Enforcer.BatchEnforce(requests)
-		if err != nil {
-			io.WriteString(s, err.Error())
+		if res := models.DB.Where("username = ?", s.User()).Preload("Servers", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at desc")
+		}).First(&user); res.Error != nil {
+			io.WriteString(s, res.Error.Error())
 			s.Exit(1)
+			return
 		}
-		for i, g := range *groups {
-			if results[i] && g.IsActive {
-				groupMap[g.ID] = g.Name
-			}
-		}
+		servers = user.Servers
 	}
-	for k, v := range groupMap {
-		groupTable.Append([]string{strconv.Itoa(int(k)), v})
+	// 服务器查找
+	serverMap := map[uint]models.Server{}
+	for _, s := range servers {
+		serverMap[s.ID] = s
 	}
-	groupTable.Render()
+	serverTable := tablewriter.NewWriter(s)
+	serverTable.SetHeader([]string{"id", "name", "ip", "remark"})
+	for k, v := range serverMap {
+		serverTable.Append([]string{strconv.Itoa(int(k)), v.Name, v.IP, v.Remark})
+	}
+	serverTable.Render()
 	// 开启ternimal跟用户交互
 	promt := fmt.Sprintf("[%s]=> ", s.User())
 	terminal := term.NewTerminal(s, "")
 	terminal.SetPrompt(string(terminal.Escape.Red) + promt + string(terminal.Escape.Reset))
-	var groupInput string
-	for {
-		io.WriteString(s, "请选择分组ID: ")
-		line, err := terminal.ReadLine()
-		if err == io.EOF {
-			log.Println(err)
-			s.Exit(1)
-			return
-		}
-		if err != nil {
-			log.Println(err)
-			s.Exit(1)
-			return
-		}
-		if line == "" {
-			log.Println("empty")
-			groupTable.Render()
-			continue
-		}
-		if len(line) > 0 {
-			groupInput = line
-			break
-		}
-	}
-	groupID, err := strconv.Atoi(groupInput)
-	if err != nil {
-		io.WriteString(s, err.Error())
-		s.Exit(1)
-	}
-	// 服务器查找
-	serverMap := map[uint]models.Server{}
-	// 获取所有服务器
-	servers := &models.Servers{}
-	models.DB.Find(servers)
-	if groupID == 0 {
-		log.Println("展示所有服务器")
-		if user.IsSuperuser {
-			for _, s := range *servers {
-				serverMap[s.ID] = s
-			}
-		} else {
-			sub := fmt.Sprintf("user::%d", user.ID)
-			var requests [][]interface{}
-			for _, s := range *servers {
-				obj := fmt.Sprintf("server::%d", s.ID)
-				requests = append(requests, []interface{}{sub, obj, "server"})
-			}
-			results, err := policy.Enforcer.BatchEnforce(requests)
-			if err != nil {
-				io.WriteString(s, err.Error())
-				s.Exit(1)
-			}
-			for i, s := range *servers {
-				if results[i] && s.IsActive {
-					serverMap[s.ID] = s
-				}
-			}
-		}
-	} else {
-		if _, ok := groupMap[uint(groupID)]; ok {
-			log.Println("展示选择的组里的服务器")
-			sids := []string{}
-			rules := policy.Enforcer.GetNamedGroupingPolicy("g2")
-			for _, rule := range rules {
-				x := fmt.Sprintf("group::%s", groupInput)
-				if rule[1] == x {
-					sids = append(sids, strings.ReplaceAll(rule[0], "server::", ""))
-				}
-			}
-			servers := &models.Servers{}
-			models.DB.Where("id IN ?", sids).Find(&servers)
-			for _, s := range *servers {
-				if user.IsSuperuser {
-					serverMap[s.ID] = s
-				} else {
-					if s.IsActive {
-						serverMap[s.ID] = s
-					}
-				}
-			}
-		} else {
-			io.WriteString(s, "分组不存在！\n")
-			s.Exit(1)
-		}
-	}
-	serverTable := tablewriter.NewWriter(s)
-	serverTable.SetHeader([]string{"id", "ip", "hostname", "remark"})
-	for k, v := range serverMap {
-		serverTable.Append([]string{strconv.Itoa(int(k)), v.IP, v.Hostname.String, v.Remark.String})
-	}
-	serverTable.Render()
+
 	var serverInput string
 	for {
 		io.WriteString(s, "请选择服务器ID: ")
 		line, err := terminal.ReadLine()
 		if err == io.EOF {
-			log.Println(err)
+			misc.Logger.Error().Err(err).Str("from", "sshd").Msg("")
 			s.Exit(1)
 			return
 		}
 		if err != nil {
-			log.Println(err)
+			misc.Logger.Error().Err(err).Str("from", "sshd").Msg("")
 			s.Exit(1)
 			return
 		}
 		if line == "" {
-			log.Println("empty")
+			misc.Logger.Error().Err(err).Str("from", "sshd").Msg("empty")
 			serverTable.Render()
 			continue
 		}
@@ -207,30 +121,51 @@ func sshHandler(s ssh.Session) {
 	if err != nil {
 		io.WriteString(s, err.Error())
 		s.Exit(1)
+		return
 	}
 	if server, ok := serverMap[uint(serverID)]; !ok {
 		io.WriteString(s, "服务器不存在！\n")
 		s.Exit(1)
+		return
 	} else {
-		log.Printf("连接服务器%d...", server.ID)
-		key := &models.Key{}
-		models.DB.First(key, server.KeyID.UInt32)
+		misc.Logger.Info().Str("from", "sshd").Msg("连接服务器")
+		// 开始连接流程
+		credential := models.Credential{}
+		if res := models.DB.First(&credential, server.CredentialID); res.Error != nil {
+			io.WriteString(s, "认证信息不存在")
+			s.Exit(1)
+			return
+		}
+		var client *gossh.Client
+		spass := tools.AesDecrypt(credential.AuthContent, "0123456789012345")
+		if credential.AuthType == 1 {
+			cli, err := myssh.GetSSHClientByPassword(server.IP, spass, myssh.SSHOptions{Port: server.Port, User: credential.AuthUser})
+			if err != nil {
+				io.WriteString(s, err.Error())
+				s.Exit(1)
+				return
+			}
+			client = cli
+		}
+		if credential.AuthType == 2 {
+			cli, err := myssh.GetSSHClientByKey(server.IP, []byte(spass), myssh.SSHOptions{Port: server.Port, User: credential.AuthUser})
+			if err != nil {
+				io.WriteString(s, err.Error())
+				s.Exit(1)
+				return
+			}
+			client = cli
+		}
+		defer client.Close()
 		// 连接远程服务器
 		_, winCh, isPty := s.Pty()
 		if isPty {
-			client, err := utils.GetSSHClient(server.IP, int(server.Port), server.User, int(server.AuthType), server.Password.String, key.Content)
-			if err != nil {
-				log.Println(err)
-				io.WriteString(s, fmt.Sprintf("连接服务器失败: %v", err))
-				s.Exit(1)
-			}
-			defer client.Close()
 			//创建ssh session
 			session, err := client.NewSession()
 			if err != nil {
-				log.Printf("create session failed: %v", err)
 				io.WriteString(s, fmt.Sprintf("创建session失败: %v", err))
 				s.Exit(1)
+				return
 			}
 			defer session.Close()
 			// Set up terminal modes
@@ -241,7 +176,6 @@ func sshHandler(s ssh.Session) {
 			}
 			// Request pseudo terminal
 			if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
-				log.Printf("request for pseudo terminal failed: %v", err)
 				io.WriteString(s, fmt.Sprintf("request for pseudo terminal failed: %v", err))
 				s.Exit(1)
 			}
@@ -250,13 +184,11 @@ func sshHandler(s ssh.Session) {
 			session.Stderr = s
 			// 开始记录终端录屏
 			now := time.Now()
-			time_str := now.Format("2006-01-02-15-04-05")
+			// time_str := now.Format("2006-01-02-15-04-05")
+			time_str, _ := times.GetTimeString(0, times.TimeOptions{Layout: "20060102150405"})
 			record_dir := "./records/"
-			if !utils.PathExists(record_dir) {
-				os.Mkdir(record_dir, 0755)
-			}
-			record_file := fmt.Sprintf("%s%s-%d-%s.cast", record_dir, s.User(), server.ID, time_str)
-			record := models.Record{User: s.User(), ServerID: server.ID, File: record_file}
+			record_file := fmt.Sprintf("%s%s-%s-%s-sshd.cast", record_dir, s.User(), server.IP, time_str)
+			record := models.Record{User: s.User(), IP: server.IP, File: record_file}
 			models.DB.Create(&record)
 			// 捕捉输出，输出有回显，可用来记录终端输入输出
 			out, _ := session.StdoutPipe()
@@ -273,7 +205,7 @@ func sshHandler(s ssh.Session) {
 				header := map[string]interface{}{
 					"version":   2,
 					"width":     80,
-					"height":    40,
+					"height":    24,
 					"timestamp": timestamp,
 					"env":       env,
 				}
@@ -284,7 +216,7 @@ func sshHandler(s ssh.Session) {
 					var buffer [1024]byte
 					n, err := out.Read(buffer[:])
 					if err != nil {
-						fmt.Println("out error:", err)
+						misc.Logger.Error().Err(err).Str("from", "sshd").Msg("")
 						break
 					}
 					nt, _ := strconv.ParseFloat(fmt.Sprintf("%.9f", float64(time.Now().UnixNano())/float64(1e9)), 64)
@@ -297,14 +229,14 @@ func sshHandler(s ssh.Session) {
 			}()
 			// Start remote shell
 			if err := session.Shell(); err != nil {
-				log.Printf("failed to start shell: %v", err)
 				io.WriteString(s, fmt.Sprintf("failed to start shell: %v", err))
 				s.Exit(1)
+				return
 			}
 			// 监听window change
 			go func() {
 				for win := range winCh {
-					log.Printf("change window: %d %d", win.Height, win.Width)
+					misc.Logger.Info().Str("from", "sshd").Msg("window change")
 					session.WindowChange(win.Height, win.Width)
 				}
 			}()
@@ -315,7 +247,7 @@ func sshHandler(s ssh.Session) {
 					case <-time.After(time.Second):
 						continue
 					case <-s.Context().Done():
-						log.Println("connection closed")
+						misc.Logger.Info().Str("from", "sshd").Msg("connection closed")
 						session.Close()
 						s.Exit(1)
 						return
@@ -330,19 +262,24 @@ func sshHandler(s ssh.Session) {
 	}
 }
 
-func Start() {
-	addr := config.Config.GetString("sshd.addr")
-	keyPath := config.Config.GetString("sshd.keyPath")
+func Start(addr string, keyPath string) {
 	server := &ssh.Server{
-		Addr:            addr,
-		MaxTimeout:      DeadlineTimeout,
-		IdleTimeout:     IdleTimeout,
-		PasswordHandler: passwordHandler,
-		Handler:         sshHandler,
+		Addr:             addr,
+		MaxTimeout:       DeadlineTimeout,
+		IdleTimeout:      IdleTimeout,
+		PasswordHandler:  passwordHandler,
+		PublicKeyHandler: publickeyHandler,
+		Handler:          sshHandler,
 	}
-	dat, _ := ioutil.ReadFile(keyPath)
-	key, _ := gossh.ParsePrivateKey(dat)
+	dat, err := os.ReadFile(keyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	key, err := gossh.ParsePrivateKey(dat)
+	if err != nil {
+		log.Fatal(err)
+	}
 	server.AddHostKey(key)
-	log.Printf("starting sshd server on %s", addr)
+	misc.Logger.Info().Str("from", "sshd").Msg(fmt.Sprintf("starting sshd server on %s", addr))
 	log.Fatal(server.ListenAndServe())
 }

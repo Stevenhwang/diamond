@@ -1,9 +1,8 @@
 package models
 
 import (
-	"diamond/config"
+	"diamond/misc"
 	"fmt"
-	"log"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -14,17 +13,17 @@ import (
 var DB *gorm.DB
 
 func init() {
-	host := config.Config.Get("mysql.host")
-	port := config.Config.Get("mysql.port")
-	user := config.Config.Get("mysql.user")
-	password := config.Config.Get("mysql.password")
-	dbName := config.Config.Get("mysql.dbName")
+	host := misc.Config.GetString("mysql.host")
+	port := misc.Config.GetInt("mysql.port")
+	user := misc.Config.GetString("mysql.user")
+	password := misc.Config.GetString("mysql.password")
+	dbName := misc.Config.GetString("mysql.dbName")
 
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True", user, password, host, port, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True", user, password, host, port, dbName)
 	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 	if err != nil {
-		log.Fatalf("connect mysql error: %v", err)
+		misc.Logger.Fatal().Err(err).Str("from", "db").Msg("connect mysql error")
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -37,6 +36,13 @@ func init() {
 	// SetConnMaxLifetime 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	// 迁移 schema
-	db.AutoMigrate(&User{}, &Key{}, &Role{}, &Group{}, &Server{}, &Record{})
+	db.AutoMigrate(&User{}, &Server{}, &Credential{}, &Permission{}, &Record{})
+	// seed admin user
+	// var count int64
+	// db.Model(&User{}).Where("username = ?", "admin").Count(&count)
+	// if count == 0 {
+	// 	admin := User{Username: "admin", Password: "12345678", IsActive: true}
+	// 	db.Create(&admin)
+	// }
 	DB = db
 }

@@ -1,34 +1,37 @@
 package middlewares
 
 import (
-	"diamond/config"
-	"diamond/utils"
-	"net/http"
+	"diamond/models"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
-// Token 中间件用来解析 jwt token 并检查是否合法
+// Token 中间件用来解析 jwt token
 func Token(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		token := c.Get("user").(*jwt.Token)
-		// get token from request
-		t, _ := token.SignedString([]byte(config.Config.GetString("jwt.secret")))
-		claims := token.Claims.(jwt.MapClaims)
+		token, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return echo.NewHTTPError(400, "JWT token missing or invalid")
+		}
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return echo.NewHTTPError(400, "failed to cast claims as jwt.MapClaims")
+		}
 		uid := uint(claims["uid"].(float64))
 		username := claims["username"].(string)
-		is_superuser := claims["is_superuser"].(bool)
+		// 查看用户是否被禁用，有可能是登录之后被禁用，所以需要查询实时数据
+		user := models.User{}
+		if res := models.DB.First(&user, uid); res.Error != nil {
+			return echo.NewHTTPError(400, res.Error.Error())
+		}
+		if !user.IsActive {
+			return echo.NewHTTPError(401, "账号禁用")
+		}
 		// set context
 		c.Set("uid", uid)
 		c.Set("username", username)
-		c.Set("is_superuser", is_superuser)
-		// get token from redis and compare
-		rdToken := utils.GetToken(uid)
-		if len(rdToken) == 0 || rdToken != t {
-			return c.JSON(http.StatusUnauthorized, map[string]interface{}{"code": 401, "message": "token invalid"})
-		} else {
-			return next(c)
-		}
+		c.Set("menus", user.Menus)
+		return next(c)
 	}
 }

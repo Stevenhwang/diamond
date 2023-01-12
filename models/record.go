@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"diamond/misc"
 	"os"
 	"time"
 
@@ -10,18 +10,18 @@ import (
 
 type Record struct {
 	ID        uint      `json:"id"`
-	User      string    `gorm:"size:128" json:"user" filter:"user"`
-	ServerID  uint      `json:"server_id"`
+	User      string    `gorm:"size:128" json:"user"` // 用户
+	IP        string    `gorm:"size:128" json:"ip"`   // 服务器IP
+	File      string    `gorm:"size:128" json:"file"` // 记录文件名
 	CreatedAt time.Time `json:"created_at"`
-	File      string    `gorm:"size:128" json:"file"`
 }
 
 type Records []Record
 
 func (r *Record) AfterDelete(tx *gorm.DB) (err error) {
 	if err := os.Remove(r.File); err != nil {
-		log.Println("already removed")
+		misc.Logger.Info().Str("from", "db").Msg("file not exists")
 	}
-	log.Println("removed")
+	misc.Logger.Info().Str("from", "db").Msg("file removed")
 	return
 }

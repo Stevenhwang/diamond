@@ -1,61 +1,41 @@
 package models
 
 import (
-	"diamond/utils"
-	"strconv"
+	"errors"
 	"time"
 
-	"github.com/gobuffalo/nulls"
-	"github.com/pquerna/otp/totp"
+	"github.com/Stevenhwang/gommon/nulls"
+	"github.com/Stevenhwang/gommon/tools"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID            uint         `json:"id"`
-	Username      string       `gorm:"size:128;unique" filter:"username" json:"username" validate:"required"`
-	Password      string       `gorm:"size:128" json:"password"`
-	Email         nulls.String `gorm:"size:128" filter:"email" json:"email" validate:"omitempty,email"`
-	Telephone     nulls.String `gorm:"size:20" filter:"telephone" json:"telephone"`
-	Department    nulls.String `gorm:"size:128" filter:"department" json:"department"`
-	GoogleKey     nulls.String `gorm:"size:256" json:"google_key"`
-	IsActive      bool         `gorm:"default:true" json:"is_active"`
-	IsSuperuser   bool         `gorm:"default:false" json:"is_superuser"`
-	LastLoginIP   nulls.String `gorm:"size:128" filter:"last_login_ip" json:"last_login_ip"`
-	LastLoginTime nulls.Time   `json:"last_login_time"`
-	CreatedAt     time.Time    `json:"created_at"`
-	UpdatedAt     time.Time    `json:"updated_at"`
+	ID            uint           `json:"id"`
+	Username      string         `gorm:"size:128;unique" json:"username" validate:"required"`
+	Password      string         `gorm:"size:128" json:"password"`
+	Publickey     string         `gorm:"type:text" json:"publickey"` // 公钥，用于免密登录ssh服务器
+	Menus         datatypes.JSON `gorm:"type:json" json:"menus"`     // 给用户分配的菜单
+	IsActive      bool           `json:"is_active"`                  // 账号是否激活
+	LastLoginIP   nulls.String   `gorm:"size:128" json:"last_login_ip"`
+	LastLoginTime nulls.Time     `json:"last_login_time"`
+	Servers       Servers        `gorm:"many2many:user_servers;"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 type Users []User
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if len(u.Password) == 0 {
-		u.Password = "12345678" // 默认密码
+		return errors.New("password can not be empty")
 	}
-	pass, err := utils.GeneratePassword(u.Password)
+	pass, err := tools.GeneratePassword(u.Password)
 	if err != nil {
 		return err
 	}
 	u.Password = pass
 	// generate otp key
-	if u.GoogleKey.String == "seed" {
-		u.GoogleKey = nulls.NewString("")
-	} else {
-		var accountName string
-		if len(u.Email.String) > 0 {
-			accountName = u.Email.String
-		} else {
-			accountName = u.Username + "@diamond"
-		}
-		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      "diamond",
-			AccountName: accountName,
-		})
-		if err != nil {
-			return err
-		}
-		u.GoogleKey = nulls.NewString(key.Secret())
-	}
 	return nil
 }
 
@@ -65,35 +45,11 @@ func (u *User) AfterCreate(tx *gorm.DB) (err error) {
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	if len(u.Password) > 0 {
-		pass, err := utils.GeneratePassword(u.Password)
+		pass, err := tools.GeneratePassword(u.Password)
 		if err != nil {
 			return err
 		}
 		u.Password = pass
-	}
-	// 处理otpkey更新
-	otpKey, _ := strconv.Atoi(u.GoogleKey.String)
-	if otpKey == 2 { // 重置key
-		var accountName string
-		if len(u.Email.String) > 0 {
-			accountName = u.Email.String
-		} else {
-			accountName = u.Username + "@diamond"
-		}
-		key, err := totp.Generate(totp.GenerateOpts{
-			Issuer:      "diamond",
-			AccountName: accountName,
-		})
-		if err != nil {
-			return err
-		}
-		u.GoogleKey = nulls.NewString(key.Secret())
-	} else if otpKey == 3 { // 清空key
-		u.GoogleKey = nulls.NewString("")
-	}
-	// 处理is_active更新
-	if !u.IsActive {
-		utils.DelToken(u.ID)
 	}
 	return nil
 }
