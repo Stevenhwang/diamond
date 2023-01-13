@@ -147,6 +147,9 @@ func init() {
 					cache.Ban(c.RealIP())
 					return false, nil
 				}
+				if !user.IsActive {
+					return false, nil
+				}
 				return true, nil
 			}
 		}
