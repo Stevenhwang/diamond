@@ -139,6 +139,7 @@ func init() {
 	// 反向代理 navicat http 隧道，密码保护
 	naviURL, _ := url.Parse(misc.Config.GetString("navicate.url"))
 	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		c.Set("username", username)
 		key := fmt.Sprintf("users:%s", username)
 		var ctx = context.Background()
 		pass, err := cache.Cache.Get(ctx, key).Result()
