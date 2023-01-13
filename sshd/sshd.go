@@ -1,6 +1,7 @@
 package sshd
 
 import (
+	"diamond/cache"
 	"diamond/misc"
 	"diamond/models"
 	"encoding/json"
@@ -30,16 +31,20 @@ var (
 func passwordHandler(ctx ssh.Context, password string) bool {
 	// 先检查IP是否在黑名单，再继续
 	ip := ctx.RemoteAddr().(*net.TCPAddr).IP.String()
-	_, err := misc.Cache.Get(ip)
-	if err == nil {
+	b, err := cache.GetBan(ip)
+	if err != nil {
+		return false
+	}
+	if b {
 		return false
 	}
 	user := models.User{}
 	if res := models.DB.Where("username = ?", ctx.User()).First(&user); res.Error != nil {
-		misc.Cache.Set(ip, []byte{1}) // 试错也加入黑名单
+		cache.Ban(ip) // 试错也加入黑名单
 		return false
 	}
-	if !misc.Checker(ip, user.Password, password) {
+	if !tools.CheckPassword(user.Password, password) {
+		cache.Ban(ip)
 		return false
 	}
 	if !user.IsActive {
@@ -51,23 +56,26 @@ func passwordHandler(ctx ssh.Context, password string) bool {
 func publickeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	// 先检查IP是否在黑名单，再继续
 	ip := ctx.RemoteAddr().(*net.TCPAddr).IP.String()
-	_, err := misc.Cache.Get(ip)
-	if err == nil {
+	b, err := cache.GetBan(ip)
+	if err != nil {
+		return false
+	}
+	if b {
 		return false
 	}
 	user := models.User{}
 	if res := models.DB.Where("username = ?", ctx.User()).First(&user); res.Error != nil {
-		misc.Cache.Set(ip, []byte{1}) // 试错也加入黑名单
+		cache.Ban(ip) // 试错也加入黑名单
 		return false
 	}
 	data := user.Publickey
 	allowed, _, _, _, err := ssh.ParseAuthorizedKey([]byte(data))
 	if err != nil {
-		misc.Cache.Set(ip, []byte{1}) // 试错也加入黑名单
+		cache.Ban(ip) // 试错也加入黑名单
 		return false
 	}
 	if !ssh.KeysEqual(key, allowed) {
-		misc.Cache.Set(ip, []byte{1}) // 试错也加入黑名单
+		cache.Ban(ip) // 试错也加入黑名单
 		return false
 	}
 	return true

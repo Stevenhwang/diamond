@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"diamond/misc"
+	"diamond/cache"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,8 +11,11 @@ import (
 func BanIP(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		c.Response().Header().Set(echo.HeaderServer, "Echo/Golang")
-		_, err := misc.Cache.Get(c.RealIP())
-		if err == nil { // 找到黑名单IP
+		b, err := cache.GetBan(c.RealIP())
+		if err != nil {
+			return echo.NewHTTPError(400, err.Error())
+		}
+		if b {
 			return echo.NewHTTPError(http.StatusForbidden, "ip forbiden")
 		}
 		return next(c)

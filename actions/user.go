@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"diamond/cache"
 	"diamond/misc"
 	"diamond/models"
 	"diamond/policy"
@@ -31,11 +32,12 @@ func login(c echo.Context) error {
 	}
 	user := models.User{}
 	if result := models.DB.Where("username = ?", au.Username).First(&user); result.Error != nil {
-		misc.Cache.Set(c.RealIP(), []byte{1}) // 试错也加入黑名单
+		cache.Ban(c.RealIP())
 		return echo.NewHTTPError(400, result.Error.Error())
 	}
 	// 验证密码
-	if !misc.Checker(c.RealIP(), user.Password, au.Password) {
+	if !tools.CheckPassword(user.Password, au.Password) {
+		cache.Ban(c.RealIP())
 		return echo.NewHTTPError(400, "password invalid")
 	}
 	if !user.IsActive {

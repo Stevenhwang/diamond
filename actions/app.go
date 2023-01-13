@@ -2,6 +2,7 @@ package actions
 
 import (
 	"database/sql/driver"
+	"diamond/cache"
 	"diamond/middlewares"
 	"diamond/misc"
 	"diamond/models"
@@ -14,6 +15,7 @@ import (
 	"diamond/frontend"
 
 	"github.com/Stevenhwang/gommon/nulls"
+	"github.com/Stevenhwang/gommon/tools"
 
 	"github.com/go-playground/validator/v10"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -128,11 +130,12 @@ func init() {
 	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		user := models.User{}
 		if result := models.DB.Where("username = ?", username).First(&user); result.Error != nil {
-			misc.Cache.Set(c.RealIP(), []byte{1}) // 试错也加入黑名单
+			cache.Ban(c.RealIP()) // 试错也加入黑名单
 			return false, nil
 		}
 		// 验证密码
-		if !misc.Checker(c.RealIP(), user.Password, password) {
+		if !tools.CheckPassword(user.Password, password) {
+			cache.Ban(c.RealIP())
 			return false, nil
 		}
 		if !user.IsActive {
