@@ -93,8 +93,16 @@ func init() {
 		LogStatus:    true,
 		LogUserAgent: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			username := c.Get("username")
+			var un string
+			if username == nil {
+				un = ""
+			} else {
+				un = username.(string)
+			}
 			misc.Logger.Info().
 				Str("from", "app").
+				Str("user", un).
 				Str("remote_ip", v.RemoteIP).
 				Str("host", v.Host).
 				Str("method", v.Method).
