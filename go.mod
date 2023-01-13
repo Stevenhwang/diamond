@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/Stevenhwang/gommon v0.1.0
+	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/casbin/casbin/v2 v2.60.0
 	github.com/casbin/gorm-adapter/v3 v3.14.0
 	github.com/gliderlabs/ssh v0.3.5

@@ -14,7 +14,6 @@ import (
 	"diamond/frontend"
 
 	"github.com/Stevenhwang/gommon/nulls"
-	"github.com/Stevenhwang/gommon/tools"
 
 	"github.com/go-playground/validator/v10"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -112,6 +111,9 @@ func init() {
 	// 	return c.String(200, "Hello from diamond!")
 	// })
 
+	// banip middleware
+	e.Use(middlewares.BanIP)
+
 	assetHandler := http.FileServer(getFileSystem())
 	e.GET("/", echo.WrapHandler(assetHandler))
 	e.GET("/static/*", echo.WrapHandler(assetHandler))
@@ -126,10 +128,11 @@ func init() {
 	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		user := models.User{}
 		if result := models.DB.Where("username = ?", username).First(&user); result.Error != nil {
+			misc.Cache.Set(c.RealIP(), []byte{1}) // 试错也加入黑名单
 			return false, nil
 		}
 		// 验证密码
-		if !tools.CheckPassword(user.Password, password) {
+		if !misc.Checker(c.RealIP(), user.Password, password) {
 			return false, nil
 		}
 		if !user.IsActive {
