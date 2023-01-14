@@ -31,9 +31,9 @@ func init() {
 	}
 }
 
-// ban ip for 1 hour
+// ban ip for 7 days
 func Ban(ip string) error {
-	res := Cache.Set(ctx, ip, 1, time.Hour)
+	res := Cache.Set(ctx, ip, 1, 168*time.Hour)
 	return res.Err()
 }
 
