@@ -304,12 +304,16 @@ func Start(addr string, keyPath string) {
 			return true
 		}),
 		ReversePortForwardingCallback: ssh.ReversePortForwardingCallback(func(ctx ssh.Context, host string, port uint32) bool {
-			misc.Logger.Info().Str("from", "sshd").Msg(fmt.Sprintf("attempt to bind host:%s port:%d", host, port))
+			misc.Logger.Info().Str("from", "sshd").Msg(fmt.Sprintf("Attempt to bind host:%s port:%d", host, port))
 			return true
 		}),
 		RequestHandlers: map[string]ssh.RequestHandler{
 			"tcpip-forward":        forwardHandler.HandleSSHRequest,
 			"cancel-tcpip-forward": forwardHandler.HandleSSHRequest,
+		},
+		ChannelHandlers: map[string]ssh.ChannelHandler{
+			"session":      ssh.DefaultSessionHandler,
+			"direct-tcpip": ssh.DirectTCPIPHandler,
 		},
 	}
 	dat, err := os.ReadFile(keyPath)
