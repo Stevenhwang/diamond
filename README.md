@@ -39,6 +39,6 @@ config.yml
 ```bash
 Available Commands:
   app         start app server[开启app服务]
-  seed        seed admin account[创建admin账户]
+  seed        seed user account[创建用户账户]
   sshd        start sshd server[开启sshd服务]
 ```
