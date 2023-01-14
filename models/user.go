@@ -6,6 +6,7 @@ import (
 
 	"github.com/Stevenhwang/gommon/nulls"
 	"github.com/Stevenhwang/gommon/tools"
+	passwordvalidator "github.com/wagslane/go-password-validator"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -26,9 +27,16 @@ type User struct {
 
 type Users []User
 
+var entropy = passwordvalidator.GetEntropy("a very safe password")
+
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if len(u.Password) == 0 {
 		return errors.New("password can not be empty")
+	}
+	// 密码强度检测
+	errs := passwordvalidator.Validate(u.Password, entropy)
+	if errs != nil {
+		return errs
 	}
 	pass, err := tools.GeneratePassword(u.Password)
 	if err != nil {
@@ -45,6 +53,11 @@ func (u *User) AfterCreate(tx *gorm.DB) (err error) {
 
 func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	if len(u.Password) > 0 {
+		// 密码强度检测
+		errs := passwordvalidator.Validate(u.Password, entropy)
+		if errs != nil {
+			return errs
+		}
 		pass, err := tools.GeneratePassword(u.Password)
 		if err != nil {
 			return err
