@@ -34,13 +34,13 @@ var InstanceTypes = map[string]string{
 
 type Server struct {
 	ID             uint      `json:"id"`
-	Name           string    `gorm:"size:128" json:"name" validate:"required"` // 机器名称或主机名
-	IP             string    `gorm:"size:128;unique" json:"ip" validate:"required,ip"`
+	Name           string    `gorm:"size:128" json:"name" validate:"required" filter:"name"` // 机器名称或主机名
+	IP             string    `gorm:"size:128;unique" json:"ip" validate:"required,ip" filter:"ip"`
 	Port           uint      `gorm:"default:22" json:"port" validate:"required,gte=0,lte=65535"`
-	CredentialID   uint      `json:"credential_id" validate:"required"` // 关联认证
-	Remark         string    `gorm:"type:text" json:"remark"`           // 记录机器用途
-	InstanceType   string    `gorm:"size:128" json:"instance_type"`     // 实例类型
-	Specifications string    `gorm:"size:128" json:"specifications"`    // 实例配置
+	CredentialID   uint      `json:"credential_id" validate:"required"`       // 关联认证
+	Remark         string    `gorm:"type:text" json:"remark" filter:"remark"` // 记录机器用途
+	InstanceType   string    `gorm:"size:128" json:"instance_type"`           // 实例类型
+	Specifications string    `gorm:"size:128" json:"specifications"`          // 实例配置
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }

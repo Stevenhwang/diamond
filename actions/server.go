@@ -24,14 +24,14 @@ func getServers(c echo.Context) error {
 		for _, s := range user.Servers {
 			sids = append(sids, s.ID)
 		}
-		if res := baseQuery.Scopes(models.Paginate(c)).Where("id IN ?", sids).Find(&servers); res.Error != nil {
+		if res := baseQuery.Scopes(models.Paginate(c), models.AnyFilter(models.Server{}, c)).Where("id IN ?", sids).Find(&servers); res.Error != nil {
 			return echo.NewHTTPError(400, res.Error.Error())
 		}
 	} else {
 		if res := baseQuery.Model(&models.Server{}).Count(&total); res.Error != nil {
 			return echo.NewHTTPError(400, res.Error.Error())
 		}
-		if res := baseQuery.Scopes(models.Paginate(c)).Find(&servers); res.Error != nil {
+		if res := baseQuery.Scopes(models.Paginate(c), models.AnyFilter(models.Server{}, c)).Find(&servers); res.Error != nil {
 			return echo.NewHTTPError(400, res.Error.Error())
 		}
 	}
