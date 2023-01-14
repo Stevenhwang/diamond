@@ -1,10 +1,7 @@
 package models
 
 import (
-	"context"
-	"diamond/cache"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/Stevenhwang/gommon/nulls"
@@ -43,9 +40,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 func (u *User) AfterCreate(tx *gorm.DB) (err error) {
-	key := fmt.Sprintf("users:%s", u.Username)
-	var ctx = context.Background()
-	cache.Cache.Set(ctx, key, u.Password, 1*time.Hour) // 缓存用户和密码
 	return nil
 }
 
@@ -61,15 +55,9 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 }
 
 func (u *User) AfterUpdate(tx *gorm.DB) (err error) {
-	key := fmt.Sprintf("users:%s", u.Username)
-	var ctx = context.Background()
-	cache.Cache.Set(ctx, key, u.Password, 1*time.Hour) // 缓存用户和密码
 	return
 }
 
 func (u *User) AfterDelete(tx *gorm.DB) (err error) {
-	key := fmt.Sprintf("users:%s", u.Username)
-	var ctx = context.Background()
-	cache.Cache.Del(ctx, key)
 	return
 }

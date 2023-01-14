@@ -1,24 +1,17 @@
 package actions
 
 import (
-	"context"
 	"database/sql/driver"
-	"diamond/cache"
 	"diamond/middlewares"
 	"diamond/misc"
-	"diamond/models"
 	"fmt"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"reflect"
-	"time"
 
 	"diamond/frontend"
 
 	"github.com/Stevenhwang/gommon/nulls"
-	"github.com/Stevenhwang/gommon/tools"
-	"github.com/go-redis/redis/v8"
 
 	"github.com/go-playground/validator/v10"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -135,46 +128,6 @@ func init() {
 
 	// ssh records 目录
 	e.Static("/records", "./records")
-
-	// 反向代理 navicat http 隧道，密码保护
-	naviURL, _ := url.Parse(misc.Config.GetString("navicate.url"))
-	navi := e.Group("/ntunnel_mysql.php", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		c.Set("username", username)
-		key := fmt.Sprintf("users:%s", username)
-		var ctx = context.Background()
-		pass, err := cache.Cache.Get(ctx, key).Result()
-		user := models.User{}
-		if err == redis.Nil || err != nil { // 缓存中找不到或者redis出问题，查库
-			if result := models.DB.Where("username = ?", username).First(&user); result.Error != nil {
-				// 数据库也查不到, 禁IP
-				cache.Ban(c.RealIP())
-				return false, nil
-			} else {
-				// 验证密码
-				cache.Cache.Set(ctx, key, user.Password, 1*time.Hour) // 缓存用户和密码
-				if !tools.CheckPassword(user.Password, password) {
-					cache.Ban(c.RealIP())
-					return false, nil
-				}
-				if !user.IsActive {
-					return false, nil
-				}
-				return true, nil
-			}
-		}
-		// 缓存查到
-		if !tools.CheckPassword(pass, password) {
-			cache.Ban(c.RealIP())
-			return false, nil
-		} else {
-			return true, nil
-		}
-	}))
-	navi.Use(middleware.Proxy(middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{
-		{
-			URL: naviURL,
-		},
-	})))
 
 	// api group route
 	api := e.Group("/api")
