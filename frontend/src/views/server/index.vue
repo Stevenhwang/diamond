@@ -86,14 +86,16 @@
                 :row-style="{height:'35px'}"
                 :cell-style="{padding:'0 0'}">
         <el-table-column prop="name"
+                         width="200"
                          label="名称" />
         <el-table-column prop="ip"
                          width="160"
                          label="IP" />
         <el-table-column prop="instance_type"
+                         width="100"
                          label="实例类型" />
         <el-table-column prop="specifications"
-                         show-overflow-tooltip
+                         width="100"
                          label="实例配置" />
         <el-table-column prop="remark"
                          show-overflow-tooltip

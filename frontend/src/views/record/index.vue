@@ -50,7 +50,7 @@
                          label="用户"
                          width="150" />
         <el-table-column prop="ip"
-                         width="180"
+                         width="160"
                          label="服务器IP" />
         <el-table-column prop="file"
                          label="记录文件">
@@ -59,6 +59,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="created_at"
+                         width="170"
                          label="时间">
           <template slot-scope="scope">
             {{ parseTime(new Date(scope.row.created_at)) }}
