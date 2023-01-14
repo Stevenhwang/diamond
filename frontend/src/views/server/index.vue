@@ -227,6 +227,7 @@ export default {
       }
     },
     handleCreate() {
+      this.getCres()
       this.resetForm()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
