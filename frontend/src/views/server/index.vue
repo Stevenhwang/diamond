@@ -193,6 +193,7 @@ export default {
   },
   methods: {
     changeSearch() {
+      this.listQuery.page = 1
       this.getData()
     },
     handleConn(row) {
