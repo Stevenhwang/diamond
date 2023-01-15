@@ -105,9 +105,10 @@ func sshHandler(s ssh.Session) {
 		servers = user.Servers
 	}
 	// 服务器查找
-	serverMap := map[uint]models.Server{}
-	for _, s := range servers {
-		serverMap[s.ID] = s
+	serverMap := map[int]models.Server{}
+	for i, s := range servers {
+		// serverMap[s.ID] = s
+		serverMap[i+1] = s
 	}
 	serverTable := tablewriter.NewWriter(s)
 	serverTable.SetHeader([]string{"id", "name", "ip", "remark"})
@@ -150,7 +151,7 @@ func sshHandler(s ssh.Session) {
 		s.Exit(1)
 		return
 	}
-	if server, ok := serverMap[uint(serverID)]; !ok {
+	if server, ok := serverMap[serverID]; !ok {
 		io.WriteString(s, "服务器不存在！\n")
 		s.Exit(1)
 		return
