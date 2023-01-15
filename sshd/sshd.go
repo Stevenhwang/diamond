@@ -105,13 +105,15 @@ func sshHandler(s ssh.Session) {
 		servers = user.Servers
 	}
 	// 服务器查找
-	serverMap := map[int]models.Server{}
+	serverMap := make(map[int]models.Server)
+	sortKeys := []int{} // golang map 遍历不保证顺序，用sortKeys来遍历保证顺序
 	for i, s := range servers {
+		sortKeys = append(sortKeys, i+1)
 		serverMap[i+1] = s
 	}
 	serverData := [][]string{}
-	for k, v := range serverMap {
-		serverData = append(serverData, []string{strconv.Itoa(k), v.Name, v.IP, v.Remark})
+	for _, v := range sortKeys {
+		serverData = append(serverData, []string{strconv.Itoa(v), serverMap[v].Name, serverMap[v].IP, serverMap[v].Remark})
 	}
 	serverTable := tablewriter.NewWriter(s)
 	serverTable.SetHeader([]string{"id", "name", "ip", "remark"})
