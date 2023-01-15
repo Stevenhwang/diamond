@@ -107,14 +107,15 @@ func sshHandler(s ssh.Session) {
 	// 服务器查找
 	serverMap := map[int]models.Server{}
 	for i, s := range servers {
-		// serverMap[s.ID] = s
 		serverMap[i+1] = s
+	}
+	serverData := [][]string{}
+	for k, v := range serverMap {
+		serverData = append(serverData, []string{strconv.Itoa(k), v.Name, v.IP, v.Remark})
 	}
 	serverTable := tablewriter.NewWriter(s)
 	serverTable.SetHeader([]string{"id", "name", "ip", "remark"})
-	for k, v := range serverMap {
-		serverTable.Append([]string{strconv.Itoa(int(k)), v.Name, v.IP, v.Remark})
-	}
+	serverTable.AppendBulk(serverData)
 	serverTable.Render()
 	// 开启ternimal跟用户交互
 	promt := fmt.Sprintf("[%s]=> ", s.User())
