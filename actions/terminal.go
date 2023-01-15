@@ -210,7 +210,7 @@ func terminal(c echo.Context) error {
 			time_str, _ := times.GetTimeString(0, times.TimeOptions{Layout: "20060102150405"})
 			record_dir := "./records/"
 			record_file := fmt.Sprintf("%s%s-%s-%s-web.cast", record_dir, username, server.IP, time_str)
-			record := models.Record{User: username, IP: server.IP, File: record_file}
+			record := models.Record{User: username, IP: server.IP, FromIP: c.RealIP(), File: record_file}
 			models.DB.Create(&record)
 			var f *os.File
 			f, _ = os.Create(record_file)

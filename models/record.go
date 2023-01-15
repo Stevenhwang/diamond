@@ -10,9 +10,10 @@ import (
 
 type Record struct {
 	ID        uint      `json:"id"`
-	User      string    `gorm:"size:128" json:"user"` // 用户
-	IP        string    `gorm:"size:128" json:"ip"`   // 服务器IP
-	File      string    `gorm:"size:128" json:"file"` // 记录文件名
+	User      string    `gorm:"size:128" json:"user"`    // 用户
+	IP        string    `gorm:"size:128" json:"ip"`      // 服务器IP
+	FromIP    string    `gorm:"size:128" json:"from_ip"` // from IP
+	File      string    `gorm:"size:128" json:"file"`    // 记录文件名
 	CreatedAt time.Time `json:"created_at"`
 }
 

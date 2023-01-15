@@ -216,7 +216,8 @@ func sshHandler(s ssh.Session) {
 			time_str, _ := times.GetTimeString(0, times.TimeOptions{Layout: "20060102150405"})
 			record_dir := "./records/"
 			record_file := fmt.Sprintf("%s%s-%s-%s-sshd.cast", record_dir, s.User(), server.IP, time_str)
-			record := models.Record{User: s.User(), IP: server.IP, File: record_file}
+			fromIP := s.RemoteAddr().(*net.TCPAddr).IP.String()
+			record := models.Record{User: s.User(), IP: server.IP, FromIP: fromIP, File: record_file}
 			models.DB.Create(&record)
 			// 捕捉输出，输出有回显，可用来记录终端输入输出
 			out, _ := session.StdoutPipe()
