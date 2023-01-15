@@ -69,16 +69,9 @@ func publickeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 		return false
 	}
 	data := user.Publickey
-	allowed, _, _, _, err := ssh.ParseAuthorizedKey([]byte(data))
-	if err != nil {
-		cache.Ban(ip) // 试错也加入黑名单
-		return false
-	}
-	if !ssh.KeysEqual(key, allowed) {
-		cache.Ban(ip) // 试错也加入黑名单
-		return false
-	}
-	return true
+	// 这里不能直接ban ip，有的客户端比如windows terminal ssh会带key，但是如果用户没绑定key的话，这里肯定不通过
+	allowed, _, _, _, _ := ssh.ParseAuthorizedKey([]byte(data))
+	return ssh.KeysEqual(key, allowed)
 }
 
 func sshHandler(s ssh.Session) {

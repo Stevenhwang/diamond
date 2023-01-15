@@ -52,6 +52,9 @@
         <el-table-column prop="ip"
                          width="160"
                          label="服务器IP" />
+        <el-table-column prop="from_ip"
+                         width="160"
+                         label="来源IP" />
         <el-table-column prop="file"
                          label="记录文件">
           <template slot-scope="scope">
