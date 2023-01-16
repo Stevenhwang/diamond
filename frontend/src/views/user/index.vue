@@ -62,6 +62,9 @@
                :visible.sync="dialogTableVisible">
       <el-table ref="multipleTable"
                 :data="gridData"
+                style="width: 100%"
+                :row-style="{height:'35px'}"
+                :cell-style="{padding:'0 0'}"
                 @selection-change="handleSelectionChange">
         <el-table-column v-if="selectUser !== 'admin'"
                          type="selection"
@@ -97,6 +100,9 @@
                :visible.sync="serverTableVisible">
       <el-table ref="serverTable"
                 :data="serverData"
+                style="width: 100%"
+                :row-style="{height:'35px'}"
+                :cell-style="{padding:'0 0'}"
                 @selection-change="handleServerChange">
         <el-table-column v-if="selectUser !== 'admin'"
                          type="selection"
