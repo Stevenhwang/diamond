@@ -16,6 +16,7 @@
                       :label-width="formLabelWidth"
                       prop="command">
           <el-input v-model="form.command"
+                    type="textarea"
                     autocomplete="off" />
         </el-form-item>
       </el-form>
