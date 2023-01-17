@@ -37,3 +37,11 @@ export function invokeTask(id) {
     method: 'post'
   })
 }
+
+export function getTaskHist(params) {
+  return request({
+    url: '/api/taskhist',
+    method: 'get',
+    params
+  })
+}

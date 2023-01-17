@@ -128,7 +128,6 @@ func init() {
 
 	// ssh records 目录
 	e.Static("/records", "./records")
-	e.Static("/taskhist", "./taskhist")
 
 	// api group route
 	api := e.Group("/api")

@@ -284,6 +284,9 @@ export default {
         value: 'task',
         label: '任务'
       }, {
+        value: 'history',
+        label: '任务历史'
+      }, {
         value: 'user',
         label: '用户'
       }],

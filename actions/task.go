@@ -61,10 +61,10 @@ func deleteTask(c echo.Context) error {
 func getTasksHist(c echo.Context) error {
 	var total int64
 	taskhists := models.TaskHistorys{}
-	if res := models.DB.Model(&models.Task{}).Count(&total); res.Error != nil {
+	if res := models.DB.Model(&models.TaskHistory{}).Count(&total); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
-	if res := models.DB.Scopes(models.Paginate(c)).Find(&taskhists); res.Error != nil {
+	if res := models.DB.Scopes(models.Paginate(c)).Order("created_at desc").Find(&taskhists); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	return c.JSON(200, echo.Map{"success": true, "data": taskhists, "total": total})

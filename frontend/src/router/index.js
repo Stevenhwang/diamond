@@ -112,6 +112,18 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/history',
+    name: 'history',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/history/index'),
+        meta: { title: 'History', icon: 'el-icon-data-board' }
+      }
+    ]
+  },
+  {
     path: '/credential',
     name: 'credential',
     component: Layout,
