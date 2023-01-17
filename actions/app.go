@@ -128,6 +128,7 @@ func init() {
 
 	// ssh records 目录
 	e.Static("/records", "./records")
+	e.Static("/taskhist", "./taskhist")
 
 	// api group route
 	api := e.Group("/api")
@@ -168,6 +169,13 @@ func init() {
 	api.POST("/credentials", createCredential)
 	api.PUT("/credentials/:id", updateCredential)
 	api.DELETE("/credentials/:id", deleteCredential)
+
+	api.GET("/tasks", getTasks)
+	api.POST("/tasks", createTask)
+	api.PUT("/tasks/:id", updateTask)
+	api.DELETE("/tasks/:id", deleteTask)
+	api.POST("/tasks/:id", invokeTask)
+	api.GET("/taskhist", getTasksHist)
 
 	// // sync permissions，先清空表，再更新
 	// models.DB.Exec("TRUNCATE TABLE permissions")
