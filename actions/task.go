@@ -1,17 +1,9 @@
 package actions
 
 import (
-	"diamond/misc"
 	"diamond/models"
-	"encoding/json"
-	"fmt"
-	"io"
-	"os"
 	"os/exec"
-	"strconv"
-	"time"
 
-	"github.com/Stevenhwang/gommon/times"
 	"github.com/labstack/echo/v4"
 )
 
@@ -84,66 +76,23 @@ func invokeTask(c echo.Context) error {
 		return echo.NewHTTPError(400, result.Error.Error())
 	}
 	cmd := exec.Command("/bin/bash", "-c", task.Command)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	if err := cmd.Start(); err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	go func(cmd *exec.Cmd) {
-		if err := cmd.Wait(); err != nil {
-			misc.Logger.Error().Err(err).Str("from", "task").Msg(err.Error())
-		}
-	}(cmd)
 	username := c.Get("username").(string)
 	fromip := c.RealIP()
-	go func(stdout io.ReadCloser, user string, ip string) {
-		now := time.Now()
-		time_str, _ := times.GetTimeString(0, times.TimeOptions{Layout: "20060102150405"})
-		hist_dir := "./taskhist/"
-		hist_file := fmt.Sprintf("%s%s-%s.cast", hist_dir, username, time_str)
-		hist := models.TaskHistory{TaskName: task.Name, User: user, FromIP: ip, File: hist_file}
+	go func() {
+		output, err := cmd.CombinedOutput()
+		var (
+			success bool
+			content string
+		)
+		if err != nil {
+			success = false
+			content = err.Error()
+		} else {
+			success = true
+			content = string(output)
+		}
+		hist := models.TaskHistory{TaskName: task.Name, User: username, FromIP: fromip, Success: success, Content: content}
 		models.DB.Create(&hist)
-		var f *os.File
-		f, _ = os.Create(hist_file)
-		defer f.Close()
-		// 记录文件头
-		timestamp, _ := strconv.ParseFloat(fmt.Sprintf("%.9f", float64(now.UnixNano())/float64(1e9)), 64)
-		env := map[string]string{
-			"SHELL": "/bin/bash",
-			"TERM":  "xterm",
-		}
-		header := map[string]interface{}{
-			"version":   2,
-			"width":     80,
-			"height":    24,
-			"timestamp": timestamp,
-			"env":       env,
-		}
-		headerbyte, _ := json.Marshal(header)
-		f.WriteString(string(headerbyte) + "\n")
-		// 开始读取远程
-		for {
-			buf := make([]byte, 1024)
-			n, err := stdout.Read(buf[:])
-			if err != nil {
-				misc.Logger.Error().Err(err).Str("from", "task").Msg("task stdout read error")
-				return
-			}
-			// 记录终端内容
-			nt, _ := strconv.ParseFloat(fmt.Sprintf("%.9f", float64(time.Now().UnixNano())/float64(1e9)), 64)
-			iodata := []string{fmt.Sprintf("%.9f", nt-timestamp), "o", string(buf[:n])}
-			iodatabyte, _ := json.Marshal(iodata)
-			f.WriteString(string(iodatabyte) + "\n")
-			// // 输出到 websocket
-			// err = ws.WriteMessage(websocket.TextMessage, buf[:n])
-			// if err != nil {
-			// 	misc.Logger.Error().Err(err).Str("from", "terminal").Msg("write ws msg error")
-			// 	exitCh <- true
-			// 	return
-			// }
-		}
-	}(stdout, username, fromip)
+	}()
 	return c.JSON(200, echo.Map{"success": true})
 }

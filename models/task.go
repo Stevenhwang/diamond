@@ -17,9 +17,10 @@ type Tasks []Task
 type TaskHistory struct {
 	ID        uint      `json:"id"`
 	TaskName  string    `gorm:"size:256" json:"task_name"`
-	User      string    `gorm:"size:128" json:"user"`    // 执行者
-	FromIP    string    `gorm:"size:128" json:"from_ip"` // from IP
-	File      string    `gorm:"size:128" json:"file"`    // 记录文件名
+	User      string    `gorm:"size:128" json:"user"`                    // 执行者
+	FromIP    string    `gorm:"size:128" json:"from_ip"`                 // from IP
+	Success   bool      `json:"success"`                                 // 执行成功、失败
+	Content   string    `gorm:"type:text" json:"remark" filter:"remark"` // 执行内容
 	CreatedAt time.Time `json:"created_at"`
 }
 
