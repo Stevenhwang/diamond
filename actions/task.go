@@ -88,6 +88,14 @@ func invokeTask(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
+	if err := cmd.Start(); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	go func(cmd *exec.Cmd) {
+		if err := cmd.Wait(); err != nil {
+			misc.Logger.Error().Err(err).Str("from", "task").Msg(err.Error())
+		}
+	}(cmd)
 	username := c.Get("username").(string)
 	fromip := c.RealIP()
 	go func(stdout io.ReadCloser, user string, ip string) {
