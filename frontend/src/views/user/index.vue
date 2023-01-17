@@ -281,6 +281,9 @@ export default {
         value: 'record',
         label: 'ssh记录'
       }, {
+        value: 'task',
+        label: '任务'
+      }, {
         value: 'user',
         label: '用户'
       }],

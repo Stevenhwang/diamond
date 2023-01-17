@@ -100,6 +100,18 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/task',
+    name: 'task',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/task/index'),
+        meta: { title: 'Task', icon: 'el-icon-bangzhu' }
+      }
+    ]
+  },
+  {
     path: '/credential',
     name: 'credential',
     component: Layout,
