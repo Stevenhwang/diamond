@@ -6,8 +6,8 @@ import (
 
 type Task struct {
 	ID        uint      `json:"id"`
-	Name      string    `gorm:"size:256;unique" json:"name" validate:"required"` // 名称
-	Command   string    `gorm:"type:text" json:"command" validate:"required"`    // 执行的命令(脚本单独维护)
+	Name      string    `gorm:"size:256;unique" json:"name" validate:"required" filter:"name"` // 名称
+	Command   string    `gorm:"type:text" json:"command" validate:"required" filter:"command"` // 执行的命令(脚本单独维护)
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

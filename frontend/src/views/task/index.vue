@@ -34,30 +34,13 @@
     <!-- 弹窗 -->
     <el-header style="margin-top: 5px"
                height="30px">
-      <!-- <el-select v-model="searchKey"
-                 size="small"
-                 clearable
-                 placeholder="请选择搜索项目"
-                 @clear="clearSearchKey">
-        <el-option v-for="item in options"
-                   :key="item.value"
-                   :label="item.label"
-                   :value="item.value" />
-      </el-select>
-      <el-input v-model="searchValue"
+      <el-input v-model="listQuery.query"
                 size="small"
                 style="width:350px;"
+                prefix-icon="el-icon-search"
                 clearable
-                placeholder="请输入搜索内容"
-                @clear="clearSearchValue"
-                @keyup.enter.native="handleFilter" />
-      <el-button class="filter-item"
-                 type="primary"
-                 icon="el-icon-search"
-                 size="small"
-                 @click="handleFilter">
-        搜索
-      </el-button> -->
+                placeholder="请输入搜索内容，支持名称和命令"
+                @input="changeSearch" />&nbsp;
       <el-button type="primary"
                  size="small"
                  icon="el-icon-edit"
@@ -124,7 +107,8 @@ export default {
       total: 0,
       listQuery: {
         page: 1,
-        limit: 15
+        limit: 15,
+        query: ""
       },
       parseTime: parseTime,
       tableData: [],
@@ -148,6 +132,10 @@ export default {
     this.getData()
   },
   methods: {
+    changeSearch() {
+      this.listQuery.page = 1
+      this.getData()
+    },
     handleInvoke(row) {
       this.$confirm('确认执行?', '提示', {
         confirmButtonText: '确定',
