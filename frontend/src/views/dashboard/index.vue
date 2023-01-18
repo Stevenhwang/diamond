@@ -2,28 +2,24 @@
   <div class="dashboard-container">
     <div class="dashboard-text">name: {{ name }}</div>
     <div class="dashboard-text">menus: {{ menus }}</div>
-    <el-alert title="1.基于 websocket 的 web terminal，在 server 界面点击连接即可"
-              effect="dark"
+    <el-alert title="1.基于 websocket 的 web terminal，在 server 菜单页点击相应服务器的连接按钮即可使用"
               :closable="false"
-              type="success">
+              type="info">
     </el-alert>
     <el-divider></el-divider>
-    <el-alert title="2.基于 golang 的高性能 ssh 服务器，支持任意 ssh 客户端连接，支持 navicate ssh 隧道"
-              effect="dark"
+    <el-alert title="2.golang 开发的高性能 ssh 服务器，支持任意 ssh 客户端连接，支持 navicate ssh 隧道(使用平台账密或key)"
               :closable="false"
-              type="success">
+              type="info">
     </el-alert>
     <el-divider></el-divider>
-    <el-alert title="3.ssh 客户端连接同时支持密码和 public key 认证，安全起见，请联系管理员绑定 key"
-              effect="dark"
+    <el-alert title="3.ssh 客户端连接(如 Xshell 或 SecureCRT 等)可同时支持密码和 key，如需要请联系管理员绑定个人 key"
               :closable="false"
-              type="success">
+              type="info">
     </el-alert>
     <el-divider></el-divider>
-    <el-alert title="4.方便高效的任务平台，基于 linux command， 内置 ansible 和常用 playbooks"
-              effect="dark"
+    <el-alert title="4.方便高效的任务平台，基于 linux command， 内置 ansible 和常用 playbooks，可处理常见的部署和批处理任务"
               :closable="false"
-              type="success">
+              type="info">
     </el-alert>
   </div>
 </template>
