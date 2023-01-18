@@ -2,13 +2,13 @@
   <div class="dashboard-container">
     <div class="dashboard-text">name: {{ name }}</div>
     <div class="dashboard-text">menus: {{ menus }}</div>
-    <el-alert title="1.支持 web terminal，在 server 界面点击连接，就可以ssh连接服务器"
+    <el-alert title="1.基于 websocket 的 web terminal，在 server 界面点击连接即可"
               effect="dark"
               :closable="false"
               type="success">
     </el-alert>
     <el-divider></el-divider>
-    <el-alert title="2.支持 ssh 客户端连接(端口2222)，比如使用xshell: ssh test1@127.0.0.1 2222"
+    <el-alert title="2.基于 golang 的高性能 ssh 服务器，支持任意 ssh 客户端连接，支持 navicate ssh 隧道"
               effect="dark"
               :closable="false"
               type="success">
@@ -20,7 +20,7 @@
               type="success">
     </el-alert>
     <el-divider></el-divider>
-    <el-alert title="4.支持 navicate ssh 隧道，请使用平台的账号和密码连接 ssh 隧道"
+    <el-alert title="4.方便高效的任务平台，基于 linux command， 内置 ansible 和常用 playbooks"
               effect="dark"
               :closable="false"
               type="success">
