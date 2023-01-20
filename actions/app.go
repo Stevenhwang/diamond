@@ -179,6 +179,11 @@ func init() {
 	api.POST("/tasks/:id", invokeTask)
 	api.GET("/taskhist", getTasksHist)
 
+	api.GET("/crons", getCrons)
+	api.POST("/crons", createCron)
+	api.PUT("/crons/:id", updateCron)
+	api.DELETE("/crons/:id", deleteCron)
+
 	// // sync permissions，先清空表，再更新
 	// models.DB.Exec("TRUNCATE TABLE permissions")
 	// routes := e.Routes()

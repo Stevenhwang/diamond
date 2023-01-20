@@ -100,6 +100,18 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/cron',
+    name: 'cron',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/cron/index'),
+        meta: { title: 'Cron', icon: 'el-icon-set-up' }
+      }
+    ]
+  },
+  {
     path: '/task',
     name: 'task',
     component: Layout,

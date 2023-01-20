@@ -275,6 +275,9 @@ export default {
         value: 'server',
         label: '服务器'
       }, {
+        value: 'cron',
+        label: '定时任务'
+      }, {
         value: 'credential',
         label: '认证'
       }, {

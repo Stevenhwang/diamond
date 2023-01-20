@@ -21,6 +21,11 @@
               :closable="false"
               type="info">
     </el-alert>
+    <el-divider></el-divider>
+    <el-alert title="5.在任务平台基础上，建造了强大的定时任务模块，支持秒级的crontab表达式"
+              :closable="false"
+              type="info">
+    </el-alert>
   </div>
 </template>
 
