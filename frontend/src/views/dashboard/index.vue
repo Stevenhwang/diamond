@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">name: {{ name }}</div>
-    <div class="dashboard-text">menus: {{ menus }}</div>
+    <div class="dashboard-text">Hello, {{ name }}</div>
+    <!-- <div class="dashboard-text">menus: {{ menus }}</div> -->
     <el-alert title="1.基于 websocket 的 web terminal，在 server 菜单页点击相应服务器的连接按钮即可使用"
               :closable="false"
               type="info">
@@ -32,7 +32,7 @@ export default {
   computed: {
     ...mapGetters([
       'name',
-      'menus'
+      // 'menus'
     ])
   }
 }
