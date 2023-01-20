@@ -48,3 +48,18 @@ func GetBan(ip string) (bool, error) {
 	}
 	return true, nil
 }
+
+func FilterBanIPs(keyword string) ([]string, error) {
+	var key string
+	if len(keyword) > 0 {
+		key = fmt.Sprintf("*%s*", keyword)
+	} else {
+		key = "*"
+	}
+	return Cache.Keys(ctx, key).Result()
+}
+
+func DelBanIP(ip string) error {
+	_, err := Cache.Del(ctx, ip).Result()
+	return err
+}

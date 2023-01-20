@@ -289,6 +289,9 @@ export default {
       }, {
         value: 'user',
         label: '用户'
+      }, {
+        value: 'banips',
+        label: 'IP黑名单'
       }],
       total: 0,
       listQuery: {

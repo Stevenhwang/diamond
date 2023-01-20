@@ -328,3 +328,30 @@ func syncPerms(c echo.Context) error {
 	models.DB.Create(&perms)
 	return c.JSON(200, echo.Map{"success": true})
 }
+
+func getBanIPs(c echo.Context) error {
+	keyword := c.QueryParam("ip")
+	ips, err := cache.FilterBanIPs(keyword)
+	if err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	return c.JSON(200, echo.Map{"success": true, "data": ips})
+}
+
+type delBan struct {
+	IP string `json:"ip" validate:"required"`
+}
+
+func delBanIP(c echo.Context) error {
+	db := delBan{}
+	if err := c.Bind(&db); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	if err := c.Validate(&db); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	if err := cache.DelBanIP(db.IP); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	return c.JSON(200, echo.Map{"success": true})
+}

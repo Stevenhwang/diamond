@@ -149,6 +149,9 @@ func init() {
 	api.PUT("/users/:id", updateUser)
 	api.DELETE("/users/:id", deleteUser)
 
+	api.GET("/banips", getBanIPs)
+	api.POST("/delbanip", delBanIP)
+
 	api.POST("/syncPerms", syncPerms)
 
 	api.GET("/userPerms", getUserPerms)

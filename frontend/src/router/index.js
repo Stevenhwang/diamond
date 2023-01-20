@@ -161,6 +161,18 @@ export const asyncRoutes = [
       }
     ]
   },
+  {
+    path: '/banips',
+    name: 'banips',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/banips/index'),
+        meta: { title: 'BanIP', icon: 'el-icon-document-delete' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

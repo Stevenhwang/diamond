@@ -92,3 +92,19 @@ export function syncPerms() {
     method: 'post',
   })
 }
+
+export function getBanIPs(params) {
+  return request({
+    url: '/api/banips',
+    method: 'get',
+    params: params
+  })
+}
+
+export function delBanIP(data) {
+  return request({
+    url: '/api/delbanip',
+    method: 'post',
+    data: data
+  })
+}
