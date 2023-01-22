@@ -26,6 +26,11 @@
               :closable="false"
               type="info">
     </el-alert>
+    <el-divider></el-divider>
+    <el-alert title="6.golang 开发的高性能 socks5 代理服务器，便于跟服务器内网通讯，比如使用 ftp 客户端等"
+              :closable="false"
+              type="info">
+    </el-alert>
   </div>
 </template>
 
