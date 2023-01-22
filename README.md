@@ -6,6 +6,8 @@ diamond 是一个 golang 开发的完全开源的 devops 自动化运维平台
 - [x] 权限控制(前端菜单，后端接口，服务器分配，ACL 权限)
 - [x] 任务平台(linux command，可使用 ansible 或其他工具辅助)
 - [x] 定时任务(支持秒级的 crontab 表达式)
+- [x] 支持 ssh 隧道，便于 navicate 连接使用
+- [x] 内置 socks5 代理，便于跟服务器内网通讯(比如使用 ftp 客户端等)
 
 持续开发中。。。
 
@@ -38,5 +40,6 @@ config.yml
 Available Commands:
   app         start app server[开启app服务]
   seed        seed user account[创建用户账户]
+  socks5      start socks5 server[开启socks5服务]
   sshd        start sshd server[开启sshd服务]
 ```
