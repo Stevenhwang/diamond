@@ -180,13 +180,20 @@ func auth(remoteip string, r io.Reader) error {
 
 // Run starts the new connection.
 func (c *Conn) Run() error {
-	err := handshake(c.clientConn)
-	if err != nil {
+	// 先检查IP是否在黑名单，再继续
+	remoteip := c.clientConn.RemoteAddr().(*net.TCPAddr).IP.String()
+	b, err := cache.GetBan(remoteip)
+	if err != nil || b {
+		misc.Logger.Error().Err(fmt.Errorf("ip forbidden: %s", remoteip)).Str("from", "socks5").Msg("")
+		return fmt.Errorf("ip forbidden: %s", remoteip)
+	}
+	// 开始握手
+	if err := handshake(c.clientConn); err != nil {
 		c.clientConn.Write([]byte{socks5Version, noAcceptableAuth})
 		return err
 	}
 	c.clientConn.Write([]byte{socks5Version, userpassAuthRequired})
-	remoteip := c.clientConn.RemoteAddr().(*net.TCPAddr).IP.String()
+	// 开始认证
 	if err := auth(remoteip, c.clientConn); err != nil {
 		c.clientConn.Write([]byte{socks5Version, noAcceptableAuth})
 		return err
