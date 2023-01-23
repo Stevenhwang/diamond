@@ -58,7 +58,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: 'Dashboard', icon: 'dashboard' }
+      meta: { title: '首页', icon: 'dashboard' }
     }]
   },
 
@@ -95,7 +95,7 @@ export const asyncRoutes = [
         path: 'index',
         // name: 'server',
         component: () => import('@/views/server/index'),
-        meta: { title: 'Server', icon: 'el-icon-cpu' }
+        meta: { title: '服务器', icon: 'el-icon-cpu' }
       }
     ]
   },
@@ -107,7 +107,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/cron/index'),
-        meta: { title: 'Cron', icon: 'el-icon-set-up' }
+        meta: { title: '定时任务', icon: 'el-icon-set-up' }
       }
     ]
   },
@@ -119,7 +119,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/task/index'),
-        meta: { title: 'Task', icon: 'el-icon-bangzhu' }
+        meta: { title: '任务', icon: 'el-icon-bangzhu' }
       }
     ]
   },
@@ -131,7 +131,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/history/index'),
-        meta: { title: 'History', icon: 'el-icon-data-board' }
+        meta: { title: '任务历史', icon: 'el-icon-data-board' }
       }
     ]
   },
@@ -144,7 +144,7 @@ export const asyncRoutes = [
         path: 'index',
         // name: 'credential',
         component: () => import('@/views/credential/index'),
-        meta: { title: 'Credential', icon: 'el-icon-key' }
+        meta: { title: '认证', icon: 'el-icon-key' }
       }
     ]
   },
@@ -156,7 +156,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/record/index'),
-        meta: { title: 'Record', icon: 'el-icon-notebook-2' }
+        meta: { title: 'SSH记录', icon: 'el-icon-notebook-2' }
       }
     ]
   },
@@ -169,7 +169,7 @@ export const asyncRoutes = [
         path: 'index',
         // name: 'user',
         component: () => import('@/views/user/index'),
-        meta: { title: 'User', icon: 'user' }
+        meta: { title: '用户', icon: 'user' }
       }
     ]
   },
@@ -181,7 +181,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/banips/index'),
-        meta: { title: 'BanIP', icon: 'el-icon-document-delete' }
+        meta: { title: 'IP黑名单', icon: 'el-icon-document-delete' }
       }
     ]
   },

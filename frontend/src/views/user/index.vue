@@ -282,7 +282,7 @@ export default {
         label: '认证'
       }, {
         value: 'record',
-        label: 'ssh记录'
+        label: 'SSH记录'
       }, {
         value: 'task',
         label: '任务'
