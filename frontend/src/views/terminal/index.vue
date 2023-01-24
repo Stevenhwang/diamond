@@ -15,7 +15,7 @@ import { getToken } from '@/utils/auth'
 export default {
   data() {
     return {
-      scoket: '',
+      socket: '',
       term: null
     }
   },
