@@ -12,6 +12,7 @@
                 :row-style="{height:'35px'}"
                 :cell-style="{padding:'0 0'}">
         <el-table-column prop="task_name"
+                         width="350"
                          show-overflow-tooltip
                          label="任务名称" />
         <el-table-column prop="user"
