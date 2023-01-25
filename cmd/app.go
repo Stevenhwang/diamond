@@ -11,6 +11,7 @@ var appCmd = &cobra.Command{
 	Short: "start app server[开启app服务]",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		actions.CronStart()
 		addr, _ := cmd.Flags().GetString("addr")
 		app := actions.App
 		app.Logger.Fatal(app.Start(addr))

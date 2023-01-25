@@ -16,6 +16,9 @@ func init() {
 	mycron = ocron.New(ocron.WithSeconds(),
 		ocron.WithChain(ocron.SkipIfStillRunning(ocron.DefaultLogger),
 			ocron.Recover(ocron.DefaultLogger)))
+}
+
+func CronStart() {
 	// 初始化的时候如果数据库有定时任务，要添加进去，同时要更新entryid
 	crons := models.Crons{}
 	if result := models.DB.Find(&crons); result.Error != nil {
