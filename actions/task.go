@@ -86,7 +86,7 @@ func invokeTask(c echo.Context) error {
 		)
 		if err != nil {
 			success = false
-			content = err.Error()
+			content = string(output) + "\n" + err.Error()
 		} else {
 			success = true
 			content = string(output)
