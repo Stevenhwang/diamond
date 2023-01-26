@@ -110,7 +110,8 @@ func init() {
 	e.Use(middleware.Recover())
 
 	// With proxies using X-Forwarded-For header to get real client ip
-	e.IPExtractor = echo.ExtractIPFromXFFHeader()
+	// e.IPExtractor = echo.ExtractIPFromXFFHeader()
+	e.IPExtractor = echo.ExtractIPDirect()
 
 	// home route
 	// e.GET("/", func(c echo.Context) error {
