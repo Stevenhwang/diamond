@@ -50,6 +50,10 @@ func execCron(name string, target string, scriptID uint, args string) func() {
 			return
 		}
 		defer os.Remove(f.Name()) // ensure temp script file is deleted
+		if _, err := f.WriteString(script.Content); err != nil {
+			misc.Logger.Error().Err(err).Str("from", "cron").Msg("write temp file error")
+			return
+		}
 		scriptArgs := fmt.Sprintf("%s %s", f.Name(), args)
 		cmdArgs := []string{target, "-m", "script", "-a", scriptArgs}
 		cmd := exec.Command("ansible", cmdArgs...)

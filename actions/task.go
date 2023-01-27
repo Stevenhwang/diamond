@@ -86,6 +86,9 @@ func invokeTask(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
+	if _, err := f.WriteString(script.Content); err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
 	// ansible localhost -m script -a "/tmp/test.sh arg1 arg2"
 	scriptArgs := fmt.Sprintf("%s %s", f.Name(), task.Args)
 	cmdArgs := []string{task.Target, "-m", "script", "-a", scriptArgs}
