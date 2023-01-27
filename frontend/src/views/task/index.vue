@@ -32,6 +32,7 @@
                       prop="script_id">
           <el-select v-model="form.script_id"
                      style="width:100%"
+                     filterable
                      placeholder="请选择要执行的脚本">
             <el-option v-for="item in scripts"
                        :key="item.id"
