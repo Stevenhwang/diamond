@@ -15,7 +15,7 @@ diamond 是一个 golang 开发的完全开源的 devops 自动化运维平台
 
 ```bash
 Linux
-golang 1.18+
+golang 1.19+
 mysql 5.8+
 redis 3.2+
 ```
