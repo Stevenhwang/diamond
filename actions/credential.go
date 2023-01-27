@@ -56,7 +56,11 @@ func updateCredential(c echo.Context) error {
 
 func deleteCredential(c echo.Context) error {
 	credential := models.Credential{}
-	if res := models.DB.Delete(&credential, c.Param("id")); res.Error != nil {
+	if result := models.DB.First(&credential, c.Param("id")); result.Error != nil {
+		return echo.NewHTTPError(400, result.Error.Error())
+	}
+	// ensure delete hook run
+	if res := models.DB.Delete(&credential); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	return c.JSON(200, echo.Map{"success": true})

@@ -12,11 +12,39 @@
           <el-input v-model="form.name"
                     autocomplete="off" />
         </el-form-item>
-        <el-form-item label="命令"
+        <el-form-item label="目标"
                       :label-width="formLabelWidth"
-                      prop="command">
-          <el-input v-model="form.command"
-                    type="textarea"
+                      prop="target">
+          <el-select v-model="form.target"
+                     style="width:100%"
+                     filterable
+                     allow-create
+                     placeholder="请选择服务器或填写服务器分组">
+            <el-option v-for="item in servers"
+                       :key="item.id"
+                       :label="item.name + '(' + item.ip + ')'"
+                       :value="item.ip">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="脚本"
+                      :label-width="formLabelWidth"
+                      prop="script_id">
+          <el-select v-model="form.script_id"
+                     style="width:100%"
+                     placeholder="请选择要执行的脚本">
+            <el-option v-for="item in scripts"
+                       :key="item.id"
+                       :label="item.name"
+                       :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="参数"
+                      :label-width="formLabelWidth"
+                      prop="args">
+          <el-input v-model="form.args"
+                    placeholder="请填写脚本执行参数，多个参数空格分开"
                     autocomplete="off" />
         </el-form-item>
       </el-form>
@@ -57,9 +85,9 @@
                          width="300"
                          show-overflow-tooltip
                          label="名称" />
-        <el-table-column prop="command"
+        <el-table-column prop="target"
                          show-overflow-tooltip
-                         label="命令" />
+                         label="目标" />
         <el-table-column label="操作"
                          width="220">
           <template slot-scope="scope">
@@ -97,6 +125,8 @@
 
 <script>
 import { getTasks, createTask, updateTask, deleteTask, invokeTask } from '@/api/task'
+import { getScripts } from '@/api/script'
+import { getServers } from '@/api/server'
 import { parseTime } from '@/utils/index'
 import Pagination from '@/components/Pagination'
 
@@ -104,6 +134,8 @@ export default {
   components: { Pagination },
   data() {
     return {
+      scripts: [],
+      servers: [],
       total: 0,
       listQuery: {
         page: 1,
@@ -122,7 +154,9 @@ export default {
       form: {
         id: "",
         name: "",
-        command: ""
+        target: "",
+        script_id: "",
+        args: ""
       },
       formLabelWidth: '100px',
       dialogFormVisible: false,
@@ -132,6 +166,16 @@ export default {
     this.getData()
   },
   methods: {
+    getScrs() {
+      getScripts({ page: 1, limit: 100 }).then(resp => {
+        this.scripts = resp.data
+      })
+    },
+    getSers() {
+      getServers({ page: 1, limit: 100 }).then(resp => {
+        this.servers = resp.data
+      })
+    },
     changeSearch() {
       this.listQuery.page = 1
       this.getData()
@@ -165,10 +209,14 @@ export default {
       this.form = {
         id: "",
         name: "",
-        command: ""
+        target: "",
+        script_id: "",
+        args: ""
       }
     },
     handleCreate() {
+      this.getScrs()
+      this.getSers()
       this.resetForm()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -190,10 +238,14 @@ export default {
       })
     },
     handleEdit(row) {
+      this.getScrs()
+      this.getSers()
       this.resetForm()
       this.form.id = row.id
       this.form.name = row.name
-      this.form.command = row.command
+      this.form.target = row.target
+      this.form.script_id = row.script_id
+      this.form.args = row.args
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {

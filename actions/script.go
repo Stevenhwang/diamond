@@ -51,7 +51,11 @@ func updateScript(c echo.Context) error {
 
 func deleteScript(c echo.Context) error {
 	script := models.Script{}
-	if res := models.DB.Delete(&script, c.Param("id")); res.Error != nil {
+	if result := models.DB.First(&script, c.Param("id")); result.Error != nil {
+		return echo.NewHTTPError(400, result.Error.Error())
+	}
+	// ensure delete hook run
+	if res := models.DB.Delete(&script); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	return c.JSON(200, echo.Map{"success": true})

@@ -275,20 +275,23 @@ export default {
         value: 'server',
         label: '服务器'
       }, {
+        value: 'script',
+        label: '脚本'
+      }, {
         value: 'cron',
         label: '定时任务'
-      }, {
-        value: 'credential',
-        label: '认证'
-      }, {
-        value: 'record',
-        label: 'SSH记录'
       }, {
         value: 'task',
         label: '任务'
       }, {
         value: 'history',
         label: '任务历史'
+      }, {
+        value: 'credential',
+        label: '认证'
+      }, {
+        value: 'record',
+        label: 'SSH记录'
       }, {
         value: 'user',
         label: '用户'

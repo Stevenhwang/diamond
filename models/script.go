@@ -27,7 +27,7 @@ func (s *Script) BeforeDelete(tx *gorm.DB) (err error) {
 	var countCron int64
 	DB.Model(&Cron{}).Where("script_id = ?", s.ID).Count(&countCron)
 	if countCron > 0 {
-		return errors.New("can not delete because an associated task exists")
+		return errors.New("can not delete because an associated cron exists")
 	}
 	return
 }

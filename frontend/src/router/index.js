@@ -100,6 +100,18 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/script',
+    name: 'script',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/script/index'),
+        meta: { title: '脚本', icon: 'el-icon-document' }
+      }
+    ]
+  },
+  {
     path: '/cron',
     name: 'cron',
     component: Layout,
@@ -156,7 +168,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/record/index'),
-        meta: { title: 'SSH记录', icon: 'el-icon-notebook-2' }
+        meta: { title: 'SSH记录', icon: 'el-icon-reading' }
       }
     ]
   },

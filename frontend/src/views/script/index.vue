@@ -12,46 +12,11 @@
           <el-input v-model="form.name"
                     autocomplete="off" />
         </el-form-item>
-        <el-form-item label="时间"
+        <el-form-item label="脚本内容"
                       :label-width="formLabelWidth"
-                      prop="spec">
-          <el-input v-model="form.spec"
-                    placeholder="支持秒级的crontab表达式(* * * * * *)"
-                    autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="目标"
-                      :label-width="formLabelWidth"
-                      prop="target">
-          <el-select v-model="form.target"
-                     style="width:100%"
-                     filterable
-                     allow-create
-                     placeholder="请选择服务器或填写服务器分组">
-            <el-option v-for="item in servers"
-                       :key="item.id"
-                       :label="item.name + '(' + item.ip + ')'"
-                       :value="item.ip">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="脚本"
-                      :label-width="formLabelWidth"
-                      prop="script_id">
-          <el-select v-model="form.script_id"
-                     style="width:100%"
-                     placeholder="请选择要执行的脚本">
-            <el-option v-for="item in scripts"
-                       :key="item.id"
-                       :label="item.name"
-                       :value="item.id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="参数"
-                      :label-width="formLabelWidth"
-                      prop="args">
-          <el-input v-model="form.args"
-                    placeholder="请填写脚本执行参数，多个参数空格分开"
+                      prop="content">
+          <el-input v-model="form.content"
+                    type="textarea"
                     autocomplete="off" />
         </el-form-item>
       </el-form>
@@ -74,7 +39,7 @@
                 style="width:350px;"
                 prefix-icon="el-icon-search"
                 clearable
-                placeholder="请输入搜索内容，支持名称和命令"
+                placeholder="请输入搜索内容，支持名称"
                 @input="changeSearch" />&nbsp;
       <el-button type="primary"
                  size="small"
@@ -92,13 +57,9 @@
                          width="300"
                          show-overflow-tooltip
                          label="名称" />
-        <el-table-column prop="spec"
-                         width="150"
+        <el-table-column prop="content"
                          show-overflow-tooltip
-                         label="时间" />
-        <el-table-column prop="target"
-                         show-overflow-tooltip
-                         label="目标" />
+                         label="脚本内容" />
         <el-table-column label="操作"
                          width="150">
           <template slot-scope="scope">
@@ -129,9 +90,7 @@
 </template>
 
 <script>
-import { getCrons, createCron, updateCron, deleteCron } from '@/api/cron'
-import { getScripts } from '@/api/script'
-import { getServers } from '@/api/server'
+import { getScripts, createScript, updateScript, deleteScript } from '@/api/script'
 import { parseTime } from '@/utils/index'
 import Pagination from '@/components/Pagination'
 
@@ -139,8 +98,6 @@ export default {
   components: { Pagination },
   data() {
     return {
-      scripts: [],
-      servers: [],
       total: 0,
       listQuery: {
         page: 1,
@@ -153,16 +110,13 @@ export default {
       rules: {},
       dialogStatus: '',
       textMap: {
-        update: '更新定时任务',
-        create: '新增定时任务'
+        update: '更新脚本',
+        create: '新增脚本'
       },
       form: {
         id: "",
         name: "",
-        target: "",
-        script_id: "",
-        args: "",
-        spec: ""
+        content: ""
       },
       formLabelWidth: '100px',
       dialogFormVisible: false,
@@ -172,23 +126,13 @@ export default {
     this.getData()
   },
   methods: {
-    getScrs() {
-      getScripts({ page: 1, limit: 100 }).then(resp => {
-        this.scripts = resp.data
-      })
-    },
-    getSers() {
-      getServers({ page: 1, limit: 100 }).then(resp => {
-        this.servers = resp.data
-      })
-    },
     changeSearch() {
       this.listQuery.page = 1
       this.getData()
     },
     getData() {
       this.listLoading = true
-      getCrons(this.listQuery).then(resp => {
+      getScripts(this.listQuery).then(resp => {
         this.tableData = resp.data
         this.total = resp.total
         this.listLoading = false
@@ -198,15 +142,10 @@ export default {
       this.form = {
         id: "",
         name: "",
-        target: "",
-        script_id: "",
-        args: "",
-        spec: ""
+        content: ""
       }
     },
     handleCreate() {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -219,24 +158,19 @@ export default {
         if (valid) {
           const data = Object.assign({}, this.form)
           delete data.id
-          createCron(data).then(() => {
+          createScript(data).then(() => {
             this.dialogFormVisible = false
-            this.$message.success('新增定时任务成功')
+            this.$message.success('新增脚本成功')
             this.getData()
           })
         }
       })
     },
     handleEdit(row) {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.form.id = row.id
       this.form.name = row.name
-      this.form.target = row.target
-      this.form.script_id = row.script_id
-      this.form.args = row.args
-      this.form.spec = row.spec
+      this.form.content = row.content
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -248,9 +182,9 @@ export default {
         if (valid) {
           const data = Object.assign({}, this.form)
           delete data.id
-          updateCron(this.form.id, data).then(() => {
+          updateScript(this.form.id, data).then(() => {
             this.dialogFormVisible = false
-            this.$message.success('更新定时任务成功');
+            this.$message.success('更新脚本成功');
             this.getData()
           })
         }
@@ -262,9 +196,9 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteCron(row.id).then(() => {
+        deleteScript(row.id).then(() => {
           this.dialogFormVisible = false
-          this.$message.success('删除定时任务成功');
+          this.$message.success('删除脚本成功');
           this.getData()
         })
       }).catch(() => {
