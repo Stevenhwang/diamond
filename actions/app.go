@@ -173,6 +173,11 @@ func init() {
 	api.PUT("/credentials/:id", updateCredential)
 	api.DELETE("/credentials/:id", deleteCredential)
 
+	api.GET("/scripts", getScripts)
+	api.POST("/scripts", createScript)
+	api.PUT("/scripts/:id", updateScript)
+	api.DELETE("/scripts/:id", deleteScript)
+
 	api.GET("/tasks", getTasks)
 	api.POST("/tasks", createTask)
 	api.PUT("/tasks/:id", updateTask)
@@ -184,21 +189,6 @@ func init() {
 	api.POST("/crons", createCron)
 	api.PUT("/crons/:id", updateCron)
 	api.DELETE("/crons/:id", deleteCron)
-
-	// // sync permissions，先清空表，再更新
-	// models.DB.Exec("TRUNCATE TABLE permissions")
-	// routes := e.Routes()
-	// perms := models.Permissions{}
-	// prefix := "diamond/actions."
-	// for _, r := range routes {
-	// 	if strings.HasPrefix(r.Name, prefix) {
-	// 		n := strings.ReplaceAll(r.Name, prefix, "")
-	// 		if n != "login" && n != "terminal" { // 白名单
-	// 			perms = append(perms, models.Permission{Name: n, Method: r.Method, URL: r.Path})
-	// 		}
-	// 	}
-	// }
-	// models.DB.Create(&perms)
 
 	App = e
 }

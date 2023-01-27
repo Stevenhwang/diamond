@@ -2,6 +2,8 @@ package actions
 
 import (
 	"diamond/models"
+	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/labstack/echo/v4"
@@ -72,13 +74,26 @@ func getTasksHist(c echo.Context) error {
 
 func invokeTask(c echo.Context) error {
 	task := models.Task{}
-	if result := models.DB.First(&task, c.Param("id")); result.Error != nil {
-		return echo.NewHTTPError(400, result.Error.Error())
+	if res := models.DB.First(&task, c.Param("id")); res.Error != nil {
+		return echo.NewHTTPError(400, res.Error.Error())
 	}
-	cmd := exec.Command("/bin/bash", "-c", task.Command)
+	script := models.Script{}
+	if res := models.DB.First(&script, task.ScriptID); res.Error != nil {
+		return echo.NewHTTPError(400, res.Error.Error())
+	}
+	// create temp script file
+	f, err := os.CreateTemp("", "tempscript")
+	if err != nil {
+		return echo.NewHTTPError(400, err.Error())
+	}
+	// ansible localhost -m script -a "/tmp/test.sh arg1 arg2"
+	scriptArgs := fmt.Sprintf("%s %s", f.Name(), task.Args)
+	cmdArgs := []string{task.Target, "-m", "script", "-a", scriptArgs}
+	cmd := exec.Command("ansible", cmdArgs...)
 	username := c.Get("username").(string)
 	fromip := c.RealIP()
 	go func() {
+		defer os.Remove(f.Name()) // ensure temp script file is deleted
 		output, err := cmd.CombinedOutput()
 		var (
 			success bool

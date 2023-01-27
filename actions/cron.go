@@ -4,6 +4,7 @@ import (
 	"diamond/misc"
 	"diamond/models"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/labstack/echo/v4"
@@ -26,7 +27,7 @@ func CronStart() {
 	}
 	for _, c := range crons {
 		// 添加定时任务
-		entryid, _ := mycron.AddFunc(c.Spec, execCron(c.Name, c.Command))
+		entryid, _ := mycron.AddFunc(c.Spec, execCron(c.Name, c.Target, c.ScriptID, c.Args))
 		// 更新entryid
 		c.EntryID = int(entryid)
 		models.DB.Save(&c)
@@ -35,9 +36,23 @@ func CronStart() {
 }
 
 // cron 执行函数
-func execCron(name string, command string) func() {
+func execCron(name string, target string, scriptID uint, args string) func() {
 	return func() {
-		cmd := exec.Command("/bin/bash", "-c", command)
+		script := models.Script{}
+		if res := models.DB.First(&script, scriptID); res.Error != nil {
+			misc.Logger.Error().Err(res.Error).Str("from", "cron").Msg("find script error")
+			return
+		}
+		// create temp script file
+		f, err := os.CreateTemp("", "crontempscript")
+		if err != nil {
+			misc.Logger.Error().Err(err).Str("from", "cron").Msg("create temp file error")
+			return
+		}
+		defer os.Remove(f.Name()) // ensure temp script file is deleted
+		scriptArgs := fmt.Sprintf("%s %s", f.Name(), args)
+		cmdArgs := []string{target, "-m", "script", "-a", scriptArgs}
+		cmd := exec.Command("ansible", cmdArgs...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			msg := fmt.Sprintf("%s任务执行失败", name)
@@ -45,8 +60,8 @@ func execCron(name string, command string) func() {
 		} else {
 			msg := fmt.Sprintf("%s任务执行成功", name)
 			misc.Logger.Info().Str("from", "cron").Msg(msg)
-			misc.Logger.Info().Str("from", "cron").Msg(string(output))
 		}
+		misc.Logger.Info().Str("from", "cron").Msg(string(output))
 	}
 }
 
@@ -63,7 +78,7 @@ func createCron(c echo.Context) error {
 	if err := c.Validate(&cron); err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
-	entryid, err := mycron.AddFunc(cron.Spec, execCron(cron.Name, cron.Command))
+	entryid, err := mycron.AddFunc(cron.Spec, execCron(cron.Name, cron.Target, cron.ScriptID, cron.Args))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
@@ -88,7 +103,7 @@ func updateCron(c echo.Context) error {
 	// 先删除cron
 	mycron.Remove(ocron.EntryID(cron.EntryID))
 	// 再添加cron
-	entryid, err := mycron.AddFunc(cron.Spec, execCron(cron.Name, cron.Command))
+	entryid, err := mycron.AddFunc(cron.Spec, execCron(cron.Name, cron.Target, cron.ScriptID, cron.Args))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}

@@ -36,7 +36,7 @@ func init() {
 	// SetConnMaxLifetime 设置了连接可复用的最大时间
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	// 迁移 schema
-	db.AutoMigrate(&User{}, &Server{}, &Credential{}, &Permission{}, &Record{}, &Task{}, &TaskHistory{}, &Cron{})
+	db.AutoMigrate(&User{}, &Server{}, &Credential{}, &Permission{}, &Record{}, &Script{}, &Task{}, &TaskHistory{}, &Cron{})
 	// seed admin user
 	// var count int64
 	// db.Model(&User{}).Where("username = ?", "admin").Count(&count)
