@@ -2,6 +2,7 @@
   <el-container>
     <!-- 弹窗 -->
     <el-dialog :title="textMap[dialogStatus]"
+               fullscreen
                :visible.sync="dialogFormVisible">
       <el-form ref="form"
                :model="form"
@@ -15,9 +16,12 @@
         <el-form-item label="脚本内容"
                       :label-width="formLabelWidth"
                       prop="content">
-          <el-input v-model="form.content"
-                    type="textarea"
-                    autocomplete="off" />
+          <codemirror ref="myCm"
+                      v-model="form.content"
+                      :options="cmOptions"
+                      @ready="onCmReady"
+                      @focus="onCmFocus"
+                      @input="onCmCodeChange"></codemirror>
         </el-form-item>
       </el-form>
       <div slot="footer"
@@ -93,11 +97,24 @@
 import { getScripts, createScript, updateScript, deleteScript } from '@/api/script'
 import { parseTime } from '@/utils/index'
 import Pagination from '@/components/Pagination'
+import { codemirror } from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/mode/shell/shell.js'
+import 'codemirror/mode/python/python.js'
+import 'codemirror/theme/monokai.css'
 
 export default {
-  components: { Pagination },
+  components: { Pagination, codemirror },
   data() {
     return {
+      cmOptions: {
+        // codemirror options
+        tabSize: 4,
+        mode: 'text/x-sh',
+        theme: 'monokai',
+        lineNumbers: true,
+        line: true,
+      },
       total: 0,
       listQuery: {
         page: 1,
@@ -126,6 +143,30 @@ export default {
     this.getData()
   },
   methods: {
+    onCmReady(cm) {
+      if (this.form.content.startsWith('#!/bin/bash')) {
+        cm.setOption("mode", "text/x-sh")
+      }
+      if (this.form.content.startsWith('#!/bin/python')) {
+        cm.setOption("mode", "text/x-python")
+      }
+    },
+    onCmFocus(cm) {
+      if (this.form.content.startsWith('#!/bin/bash')) {
+        cm.setOption("mode", "text/x-sh")
+      }
+      if (this.form.content.startsWith('#!/bin/python')) {
+        cm.setOption("mode", "text/x-python")
+      }
+    },
+    onCmCodeChange() {
+      if (this.form.content.startsWith('#!/bin/bash')) {
+        this.$refs.myCm.codemirror.setOption("mode", "text/x-sh")
+      }
+      if (this.form.content.startsWith('#!/bin/python')) {
+        this.$refs.myCm.codemirror.setOption("mode", "text/x-python")
+      }
+    },
     changeSearch() {
       this.listQuery.page = 1
       this.getData()

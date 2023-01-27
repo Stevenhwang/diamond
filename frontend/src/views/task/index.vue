@@ -68,7 +68,7 @@
                 style="width:350px;"
                 prefix-icon="el-icon-search"
                 clearable
-                placeholder="请输入搜索内容，支持名称和命令"
+                placeholder="请输入搜索内容，支持名称和目标"
                 @input="changeSearch" />&nbsp;
       <el-button type="primary"
                  size="small"
