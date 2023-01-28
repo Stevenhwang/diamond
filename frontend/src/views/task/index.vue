@@ -89,6 +89,13 @@
         <el-table-column prop="target"
                          show-overflow-tooltip
                          label="目标" />
+        <el-table-column prop="script_id"
+                         show-overflow-tooltip
+                         label="脚本"
+                         :formatter="formatter" />
+        <el-table-column prop="args"
+                         show-overflow-tooltip
+                         label="参数" />
         <el-table-column label="操作"
                          width="220">
           <template slot-scope="scope">
@@ -164,9 +171,21 @@ export default {
     }
   },
   created() {
+    this.getScrs()
+    this.getSers()
     this.getData()
   },
   methods: {
+    formatter(row) {
+      let scriptName = ""
+      this.scripts.forEach(e => {
+        if (e.id === row.script_id) {
+          scriptName = e.name
+          return
+        }
+      })
+      return scriptName
+    },
     getScrs() {
       getScripts({ page: 1, limit: 100 }).then(resp => {
         this.scripts = resp.data
@@ -216,8 +235,6 @@ export default {
       }
     },
     handleCreate() {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -239,8 +256,6 @@ export default {
       })
     },
     handleEdit(row) {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.form.id = row.id
       this.form.name = row.name

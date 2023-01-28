@@ -252,3 +252,9 @@ export default {
   },
 }
 </script>
+<style scoped>
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}
+</style>>
