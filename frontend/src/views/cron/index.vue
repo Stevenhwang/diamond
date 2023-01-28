@@ -171,6 +171,8 @@ export default {
   },
   created() {
     this.getData()
+    this.getScrs()
+    this.getSers()
   },
   methods: {
     getScrs() {
@@ -206,8 +208,6 @@ export default {
       }
     },
     handleCreate() {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -229,8 +229,6 @@ export default {
       })
     },
     handleEdit(row) {
-      this.getScrs()
-      this.getSers()
       this.resetForm()
       this.form.id = row.id
       this.form.name = row.name
