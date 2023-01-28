@@ -144,6 +144,7 @@ export default {
   },
   methods: {
     onCmReady(cm) {
+      cm.setSize('auto', 'auto')
       if (this.form.content.startsWith('#!/bin/bash')) {
         cm.setOption("mode", "text/x-sh")
       }
@@ -252,9 +253,3 @@ export default {
   },
 }
 </script>
-<style scoped>
-.CodeMirror {
-  border: 1px solid #eee;
-  height: auto;
-}
-</style>>
