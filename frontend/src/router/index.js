@@ -68,16 +68,16 @@ export const constantRoutes = [
     hidden: true
   },
 
-  {
-    path: '/grafana',
-    component: Layout,
-    children: [
-      {
-        path: 'https://grafana.com/',
-        meta: { title: 'Grafana', icon: 'link' }
-      }
-    ]
-  },
+  // {
+  //   path: '/grafana',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'https://grafana.com/',
+  //       meta: { title: 'Grafana', icon: 'link' }
+  //     }
+  //   ]
+  // },
 
 ]
 
