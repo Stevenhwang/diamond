@@ -134,7 +134,7 @@ func deleteCron(c echo.Context) error {
 func getCrons(c echo.Context) error {
 	var total int64
 	crons := models.Crons{}
-	if res := models.DB.Model(&models.Cron{}).Count(&total); res.Error != nil {
+	if res := models.DB.Scopes(models.AnyFilter(models.Cron{}, c)).Model(&models.Cron{}).Count(&total); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	if res := models.DB.Scopes(models.Paginate(c), models.AnyFilter(models.Cron{}, c)).Find(&crons); res.Error != nil {

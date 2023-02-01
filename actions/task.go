@@ -12,7 +12,7 @@ import (
 func getTasks(c echo.Context) error {
 	var total int64
 	tasks := models.Tasks{}
-	if res := models.DB.Model(&models.Task{}).Count(&total); res.Error != nil {
+	if res := models.DB.Scopes(models.AnyFilter(models.Task{}, c)).Model(&models.Task{}).Count(&total); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	if res := models.DB.Scopes(models.Paginate(c), models.AnyFilter(models.Task{}, c)).Find(&tasks); res.Error != nil {

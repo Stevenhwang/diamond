@@ -17,18 +17,18 @@ func getServers(c echo.Context) error {
 		user := models.User{}
 		uid := c.Get("uid").(uint)
 		models.DB.Preload("Servers", func(db *gorm.DB) *gorm.DB {
-			return db.Order("created_at desc")
+			return db.Where(db.Order("created_at desc")).Where(db.Scopes(models.AnyFilter(models.Server{}, c)))
 		}).First(&user, uid)
 		total = int64(len(user.Servers))
 		var sids []uint
 		for _, s := range user.Servers {
 			sids = append(sids, s.ID)
 		}
-		if res := baseQuery.Scopes(models.Paginate(c), models.AnyFilter(models.Server{}, c)).Where("id IN ?", sids).Find(&servers); res.Error != nil {
+		if res := baseQuery.Scopes(models.Paginate(c)).Where("id IN ?", sids).Find(&servers); res.Error != nil {
 			return echo.NewHTTPError(400, res.Error.Error())
 		}
 	} else {
-		if res := baseQuery.Model(&models.Server{}).Count(&total); res.Error != nil {
+		if res := baseQuery.Scopes(models.AnyFilter(models.Server{}, c)).Model(&models.Server{}).Count(&total); res.Error != nil {
 			return echo.NewHTTPError(400, res.Error.Error())
 		}
 		if res := baseQuery.Scopes(models.Paginate(c), models.AnyFilter(models.Server{}, c)).Find(&servers); res.Error != nil {

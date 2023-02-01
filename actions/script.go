@@ -9,7 +9,7 @@ import (
 func getScripts(c echo.Context) error {
 	var total int64
 	scripts := models.Scripts{}
-	if res := models.DB.Model(&models.Script{}).Count(&total); res.Error != nil {
+	if res := models.DB.Scopes(models.AnyFilter(models.Script{}, c)).Model(&models.Script{}).Count(&total); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	if res := models.DB.Scopes(models.Paginate(c), models.AnyFilter(models.Script{}, c)).Find(&scripts); res.Error != nil {
