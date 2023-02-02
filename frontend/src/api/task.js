@@ -45,3 +45,10 @@ export function getTaskHist(params) {
     params
   })
 }
+
+export function getTaskHistDetail(id) {
+  return request({
+    url: `/api/taskhist/${id}`,
+    method: 'get'
+  })
+}

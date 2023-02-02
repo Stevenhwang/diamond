@@ -66,10 +66,18 @@ func getTasksHist(c echo.Context) error {
 	if res := models.DB.Model(&models.TaskHistory{}).Count(&total); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
-	if res := models.DB.Scopes(models.Paginate(c)).Order("created_at desc").Find(&taskhists); res.Error != nil {
+	if res := models.DB.Scopes(models.Paginate(c)).Order("created_at desc").Omit("content").Find(&taskhists); res.Error != nil {
 		return echo.NewHTTPError(400, res.Error.Error())
 	}
 	return c.JSON(200, echo.Map{"success": true, "data": taskhists, "total": total})
+}
+
+func getTasksHistDetail(c echo.Context) error {
+	taskHist := models.TaskHistory{}
+	if result := models.DB.First(&taskHist, c.Param("id")); result.Error != nil {
+		return echo.NewHTTPError(400, result.Error.Error())
+	}
+	return c.JSON(200, echo.Map{"success": true, "data": taskHist})
 }
 
 func invokeTask(c echo.Context) error {

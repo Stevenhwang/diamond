@@ -184,6 +184,7 @@ func init() {
 	api.DELETE("/tasks/:id", deleteTask)
 	api.POST("/tasks/:id", invokeTask)
 	api.GET("/taskhist", getTasksHist)
+	api.GET("/taskhist/:id", getTasksHistDetail)
 
 	api.GET("/crons", getCrons)
 	api.POST("/crons", createCron)

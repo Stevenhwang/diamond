@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { getTaskHist } from '@/api/task'
+import { getTaskHist, getTaskHistDetail } from '@/api/task'
 import { parseTime } from '@/utils/index'
 import Pagination from '@/components/Pagination'
 
@@ -86,8 +86,11 @@ export default {
   },
   methods: {
     handleClick(row) {
+      this.content = ''
       this.contentVisible = true
-      this.content = row.content
+      getTaskHistDetail(row.id).then(resp => {
+        this.content = resp.data.content
+      })
     },
     getData() {
       this.listLoading = true
